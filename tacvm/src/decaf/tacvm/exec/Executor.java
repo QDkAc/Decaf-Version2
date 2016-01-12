@@ -114,7 +114,6 @@ public final class Executor {
 	}
 
 	public class GarbageCollector {
-		long period = 2000;
 		private Map<Integer, Integer> memoryReferenceCount;
 		private Map<Integer, Integer> heapReferenceMemory;
 		private Map<Integer, Integer> stackReferenceMemory;
