@@ -3,6 +3,7 @@ package decaf.tacvm;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 
@@ -41,14 +42,17 @@ public final class TacVM {
 		Errs.checkPoint(new PrintWriter(System.err));
 		Executor executor = new Executor();
 		executor.setMaxRunInsts(maxRunInsts);
-		executor.init(parser.getStringTable(), parser.getTacs(), parser
-				.getVTables(), parser.getEnterPoint());
-		//executor.dumpInsts();
+		executor.init(parser.getStringTable(), parser.getTacs(),
+				parser.getVTables(), parser.getEnterPoint());
+		// executor.dumpInsts();
 		executor.exec();
 	}
 
 	public static void main(String[] args) {
-		//args = new String[]{"D:/test.tac"};
+		// args = new String[]{"D:/test.tac"};
+		// PrintWriter pw = new PrintWriter("a.out");
+		// pw.print("Haha");
+		// pw.close();
 		TacVM vm = new TacVM(args);
 		vm.run();
 	}

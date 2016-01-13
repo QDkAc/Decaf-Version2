@@ -18,13 +18,13 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import decaf.tacvm.exec.Memory.Block;
 import decaf.tacvm.parser.Tac;
 
 public final class Executor {
 
-	private static final String[] intrinsics = new String[] { "_Alloc", "_GC", "_Halt", "_PrintBool", "_PrintInt",
-			"_PrintString", "_ReadInteger", "_ReadLine", "_StringEqual", };
+	private static final String[] intrinsics = new String[] { "_Alloc", "_GC",
+			"_Halt", "_PrintBool", "_PrintInt", "_PrintString", "_ReadInteger",
+			"_ReadLine", "_StringEqual", };
 
 	public static int getIntrinsicIndex(String name) {
 		return Arrays.binarySearch(intrinsics, name);
@@ -96,7 +96,8 @@ public final class Executor {
 		}
 
 		private int _ReadLine() {
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					System.in));
 			try {
 				String s = br.readLine();
 				stringTable.add(s);
@@ -131,26 +132,29 @@ public final class Executor {
 			stackReferenceStringTable = new HashMap<Integer, Integer>();
 			rvReferenceMemory = rvReferenceStringTable = null;
 			Timer timer = new Timer();
-			timer.schedule(new TimerTask(){
+			timer.schedule(new TimerTask() {
 
 				@Override
 				public void run() {
-					synchronized(Executor.this){
+					synchronized (Executor.this) {
 						cyclicReferenceDetection();
 					}
 				}
-				
+
 			}, 0, period);
 		}
-		public GarbageCollector(){
+
+		public GarbageCollector() {
 			this(1000);
 		}
+
 		void setRvReferenceMemory(Integer address) {
 			clearRv();
 			// System.out.println("rv is now referencing memory " + address);
 			rvReferenceMemory = address;
 			if (memoryReferenceCount.containsKey(address))
-				memoryReferenceCount.put(address, memoryReferenceCount.get(address) + 1);
+				memoryReferenceCount.put(address,
+						memoryReferenceCount.get(address) + 1);
 			else
 				memoryReferenceCount.put(address, 1);
 		}
@@ -159,7 +163,8 @@ public final class Executor {
 			clearRv();
 			rvReferenceStringTable = address;
 			if (stringTableReferenceCount.containsKey(address))
-				stringTableReferenceCount.put(address, stringTableReferenceCount.get(address) + 1);
+				stringTableReferenceCount.put(address,
+						stringTableReferenceCount.get(address) + 1);
 			else
 				stringTableReferenceCount.put(address, 1);
 		}
@@ -169,7 +174,8 @@ public final class Executor {
 			// memory " + content);
 			stackReferenceMemory.put(address, content);
 			if (memoryReferenceCount.containsKey(content))
-				memoryReferenceCount.put(content, memoryReferenceCount.get(content) + 1);
+				memoryReferenceCount.put(content,
+						memoryReferenceCount.get(content) + 1);
 			else
 				memoryReferenceCount.put(content, 1);
 		}
@@ -177,7 +183,8 @@ public final class Executor {
 		void setStackReferenceStringTable(Integer address, Integer content) {
 			stackReferenceStringTable.put(address, content);
 			if (stringTableReferenceCount.containsKey(content))
-				stringTableReferenceCount.put(content, stringTableReferenceCount.get(content) + 1);
+				stringTableReferenceCount.put(content,
+						stringTableReferenceCount.get(content) + 1);
 			else
 				stringTableReferenceCount.put(content, 1);
 		}
@@ -187,7 +194,8 @@ public final class Executor {
 			// memory " + content);
 			heapReferenceMemory.put(address, content);
 			if (memoryReferenceCount.containsKey(content))
-				memoryReferenceCount.put(content, memoryReferenceCount.get(content) + 1);
+				memoryReferenceCount.put(content,
+						memoryReferenceCount.get(content) + 1);
 			else
 				memoryReferenceCount.put(content, 1);
 		}
@@ -195,7 +203,8 @@ public final class Executor {
 		void setHeapReferenceStringTable(Integer address, Integer content) {
 			heapReferenceStringTable.put(address, content);
 			if (stringTableReferenceCount.containsKey(content))
-				stringTableReferenceCount.put(content, stringTableReferenceCount.get(content) + 1);
+				stringTableReferenceCount.put(content,
+						stringTableReferenceCount.get(content) + 1);
 			else
 				stringTableReferenceCount.put(content, 1);
 		}
@@ -208,7 +217,8 @@ public final class Executor {
 
 		void clearRv() {
 			if (rvReferenceMemory != null) {
-				memoryReferenceCount.put(rvReferenceMemory, memoryReferenceCount.get(rvReferenceMemory) - 1);
+				memoryReferenceCount.put(rvReferenceMemory,
+						memoryReferenceCount.get(rvReferenceMemory) - 1);
 				if (memoryReferenceCount.get(rvReferenceMemory) == 0) {
 					clearBlock(rvReferenceMemory);
 					memory.dispose(rvReferenceMemory);
@@ -219,7 +229,9 @@ public final class Executor {
 				stringTableReferenceCount.put(rvReferenceStringTable,
 						memoryReferenceCount.get(rvReferenceStringTable) - 1);
 				if (stringTableReferenceCount.get(rvReferenceStringTable) == 0) {
-					System.out.println("Garbage Detected: String Table at adress " + rvReferenceStringTable);
+					System.out
+							.println("Garbage Detected: String Table at adress "
+									+ rvReferenceStringTable);
 				}
 				rvReferenceStringTable = null;
 			}
@@ -239,9 +251,12 @@ public final class Executor {
 			}
 			if (stackReferenceStringTable.containsKey(address)) {
 				Integer to = stackReferenceStringTable.get(address);
-				stringTableReferenceCount.put(to, stringTableReferenceCount.get(to) - 1);
+				stringTableReferenceCount.put(to,
+						stringTableReferenceCount.get(to) - 1);
 				if (stringTableReferenceCount.get(to) == 0) {
-					System.out.println("Garbage Detected: String Table at adress " + to);
+					System.out
+							.println("Garbage Detected: String Table at adress "
+									+ to);
 				}
 				stackReferenceStringTable.remove(address);
 				return;
@@ -261,9 +276,12 @@ public final class Executor {
 			}
 			if (heapReferenceStringTable.containsKey(address)) {
 				Integer to = heapReferenceStringTable.get(address);
-				stringTableReferenceCount.put(to, stringTableReferenceCount.get(to) - 1);
+				stringTableReferenceCount.put(to,
+						stringTableReferenceCount.get(to) - 1);
 				if (stringTableReferenceCount.get(to) == 0) {
-					System.out.println("Garbage Detected: String Table at adress " + to);
+					System.out
+							.println("Garbage Detected: String Table at adress "
+									+ to);
 				}
 				heapReferenceStringTable.remove(address);
 				return;
@@ -277,7 +295,8 @@ public final class Executor {
 				return;
 			}
 			if (stackReferenceStringTable.containsKey(address)) {
-				setRvReferenceStringTable(stackReferenceStringTable.get(address));
+				setRvReferenceStringTable(stackReferenceStringTable
+						.get(address));
 				return;
 			}
 
@@ -300,7 +319,8 @@ public final class Executor {
 				return;
 			}
 			if (stackReferenceStringTable.containsKey(from)) {
-				setStackReferenceStringTable(to, stackReferenceStringTable.get(from));
+				setStackReferenceStringTable(to,
+						stackReferenceStringTable.get(from));
 				return;
 			}
 		}
@@ -312,7 +332,8 @@ public final class Executor {
 				return;
 			}
 			if (stackReferenceStringTable.containsKey(from)) {
-				setHeapReferenceStringTable(to, stackReferenceStringTable.get(from));
+				setHeapReferenceStringTable(to,
+						stackReferenceStringTable.get(from));
 				return;
 			}
 		}
@@ -324,7 +345,8 @@ public final class Executor {
 				return;
 			}
 			if (heapReferenceStringTable.containsKey(from)) {
-				setStackReferenceStringTable(to, heapReferenceStringTable.get(from));
+				setStackReferenceStringTable(to,
+						heapReferenceStringTable.get(from));
 				return;
 			}
 		}
@@ -333,11 +355,13 @@ public final class Executor {
 			Queue<Integer> queue = new LinkedList<Integer>();
 			Set<Integer> visitedNodes = new HashSet<Integer>();
 			for (int i = 0; i < sp; i++)
-				if (stackReferenceMemory.containsKey(i) && visitedNodes.contains(i) == false) {
+				if (stackReferenceMemory.containsKey(i)
+						&& visitedNodes.contains(i) == false) {
 					queue.add(stackReferenceMemory.get(i));
 					visitedNodes.add(i);
 				}
-			if (rvReferenceMemory != null && visitedNodes.contains(rvReferenceMemory) == false) {
+			if (rvReferenceMemory != null
+					&& visitedNodes.contains(rvReferenceMemory) == false) {
 				queue.add(rvReferenceMemory);
 				visitedNodes.add(rvReferenceMemory);
 			}
@@ -393,7 +417,8 @@ public final class Executor {
 
 	private void checkStackAccess(int index) {
 		if (index >= stack.length) {
-			throw new ExecuteException("stack access index = " + index + " out of bounds");
+			throw new ExecuteException("stack access index = " + index
+					+ " out of bounds");
 		}
 		if (index < 0) {
 			int[] newStack = new int[stack.length * 2];
@@ -404,7 +429,8 @@ public final class Executor {
 		}
 	}
 
-	public void init(List<String> stringTable, List<Tac> tacs, int[] vtable, int enterPoint) {
+	public void init(List<String> stringTable, List<Tac> tacs, int[] vtable,
+			int enterPoint) {
 		memory = new Memory();
 		memory.setVTable(vtable);
 		this.stringTable = stringTable;
@@ -485,32 +511,38 @@ public final class Executor {
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
 						stack[resultIndex] = stack[fp + inst.opr1 / 4];
-						garbageCollector.assignStackToStack(fp + inst.opr1 / 4, resultIndex);
+						garbageCollector.assignStackToStack(fp + inst.opr1 / 4,
+								resultIndex);
 						break;
 					case ADD:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] + stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								+ stack[fp + inst.opr2 / 4];
 						break;
 					case SUB:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] - stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								- stack[fp + inst.opr2 / 4];
 						break;
 					case MUL:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] * stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								* stack[fp + inst.opr2 / 4];
 						break;
 					case DIV:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] / stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								/ stack[fp + inst.opr2 / 4];
 						break;
 					case MOD:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] % stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								% stack[fp + inst.opr2 / 4];
 						break;
 					case NEG:
 						resultIndex = fp + inst.opr0 / 4;
@@ -520,42 +552,50 @@ public final class Executor {
 					case GTR:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] > stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] > stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case GEQ:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] >= stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] >= stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case EQU:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] == stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] == stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case NEQ:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] != stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] != stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case LEQ:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] <= stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] <= stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case LES:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] < stack[fp + inst.opr2 / 4] ? 1 : 0;
+						stack[resultIndex] = stack[fp + inst.opr1 / 4] < stack[fp
+								+ inst.opr2 / 4] ? 1 : 0;
 						break;
 					case LAND:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] & stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								& stack[fp + inst.opr2 / 4];
 						break;
 					case LOR:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = stack[fp + inst.opr1 / 4] | stack[fp + inst.opr2 / 4];
+						stack[resultIndex] = stack[fp + inst.opr1 / 4]
+								| stack[fp + inst.opr2 / 4];
 						break;
 					case LNOT:
 						resultIndex = fp + inst.opr0 / 4;
@@ -565,7 +605,8 @@ public final class Executor {
 					case PARM:
 						checkStackAccess(sp);
 						stack[sp + inst.opr1 / 4] = stack[fp + inst.opr0 / 4];
-						garbageCollector.assignStackToStack(fp + inst.opr0 / 4, sp + inst.opr1 / 4);
+						garbageCollector.assignStackToStack(fp + inst.opr0 / 4,
+								sp + inst.opr1 / 4);
 						break;
 					case LOAD_VTBL:
 						resultIndex = fp + inst.opr0 / 4;
@@ -582,7 +623,8 @@ public final class Executor {
 						checkStackAccess(resultIndex);
 						stack[resultIndex] = inst.opr1;
 						garbageCollector.clearStack(resultIndex);
-						garbageCollector.setStackReferenceStringTable(resultIndex, inst.opr1);
+						garbageCollector.setStackReferenceStringTable(
+								resultIndex, inst.opr1);
 						break;
 					case BRANCH:
 						pc = inst.opr0;
@@ -600,18 +642,25 @@ public final class Executor {
 					case LOAD:
 						resultIndex = fp + inst.opr0 / 4;
 						checkStackAccess(resultIndex);
-						stack[resultIndex] = memory.load(stack[fp + inst.opr1 / 4], inst.opr2);
-						garbageCollector.assignHeapToStack(stack[fp + inst.opr1 / 4] + inst.opr2, resultIndex);
+						stack[resultIndex] = memory.load(stack[fp + inst.opr1
+								/ 4], inst.opr2);
+						garbageCollector.assignHeapToStack(stack[fp + inst.opr1
+								/ 4]
+								+ inst.opr2, resultIndex);
 						break;
 					case STORE:
-						memory.store(stack[fp + inst.opr0 / 4], stack[fp + inst.opr1 / 4], inst.opr2);
-						garbageCollector.assignStackToHeap(fp + inst.opr0 / 4, stack[fp + inst.opr1 / 4] + inst.opr2);
+						memory.store(stack[fp + inst.opr0 / 4], stack[fp
+								+ inst.opr1 / 4], inst.opr2);
+						garbageCollector.assignStackToHeap(fp + inst.opr0 / 4,
+								stack[fp + inst.opr1 / 4] + inst.opr2);
 						break;
 					default:
 						if (inst.loc != null) {
-							System.err.println("***Error at " + inst.loc + ", tac = " + inst.tac + ": unknown tac");
+							System.err.println("***Error at " + inst.loc
+									+ ", tac = " + inst.tac + ": unknown tac");
 						} else {
-							System.err.println("***Error, tac = " + inst.tac + ": unknown tac");
+							System.err.println("***Error, tac = " + inst.tac
+									+ ": unknown tac");
 						}
 						// printStackTrace();
 						System.exit(0);
@@ -619,15 +668,19 @@ public final class Executor {
 				} catch (ExecuteException e) {
 					e.printStackTrace();
 					if (inst.loc != null) {
-						System.err.println("***Error at " + inst.loc + ", tac = " + inst.tac + ": " + e.getMessage());
+						System.err
+								.println("***Error at " + inst.loc + ", tac = "
+										+ inst.tac + ": " + e.getMessage());
 					} else {
-						System.err.println("***Error, tac = " + inst.tac + ": " + e.getMessage());
+						System.err.println("***Error, tac = " + inst.tac + ": "
+								+ e.getMessage());
 					}
 					// printStackTrace();
 					System.exit(0);
 				} catch (Exception e) {
 					if (inst.loc != null) {
-						System.err.println("vm crash at " + inst.loc + ", tac = " + inst.tac);
+						System.err.println("vm crash at " + inst.loc
+								+ ", tac = " + inst.tac);
 						System.err.println("Caused by:");
 						e.printStackTrace(System.err);
 					} else {
@@ -640,7 +693,8 @@ public final class Executor {
 				}
 				instCount++;
 				if (instCount > maxRunInsts) {
-					System.err.println("***Error: program has been run for a long time(more than 10W instructions)");
+					System.err
+							.println("***Error: program has been run for a long time(more than 10W instructions)");
 					System.err.println("please check if there is a dead loop");
 					// printStackTrace();
 					System.exit(0);
