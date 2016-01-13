@@ -222,7 +222,7 @@ public class Memory {
 			startAddr[id] = addr;
 			myBlock[id] = currentBlock;
 		}
-
+		System.out.println(id + " allocated");
 		return id;
 	}
 
@@ -267,6 +267,7 @@ public class Memory {
 	}
 
 	public void dispose(int id) {
+		System.out.println(id + " disposed");
 		assert (active[id]);
 		if (startAddr[id] != -1) {
 			// smallItem

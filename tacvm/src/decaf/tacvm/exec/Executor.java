@@ -356,7 +356,7 @@ public final class Executor {
 		public void cyclicReferenceDetection() {
 			Queue<HeapAddress> queue = new LinkedList<HeapAddress>();
 			Set<HeapAddress> visitedNodes = new HashSet<HeapAddress>();
-			for (int i = 0; i < sp; i++)
+			for (int i = sp + 1; i < stack.length; i++)
 				if (stackReferenceMemory.containsKey(i) && visitedNodes.contains(i) == false) {
 					queue.add(stackReferenceMemory.get(i));
 					visitedNodes.add(stackReferenceMemory.get(i));
