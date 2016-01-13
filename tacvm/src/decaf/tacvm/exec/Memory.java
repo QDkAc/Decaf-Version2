@@ -138,7 +138,7 @@ public class Memory {
 			int rest = BLOCK_SIZE - currentAddr;
 			if (rest < num)
 				return -1;
-			int addr = (page << 1024) + currentAddr;
+			int addr = (page << 10) + currentAddr;
 			currentAddr += num;
 			numActiveObject++;
 			return addr;
@@ -227,7 +227,7 @@ public class Memory {
 	}
 
 	private int logicToPhysic(int id, int offset) {
-		//System.out.println("idlogic:" + id);
+		// System.out.println("idlogic:" + id);
 		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id] || offset % 4 != 0) {
 			throw new ExecuteException("bad memory access id = " + id
 					+ " offset = " + offset);

@@ -1,0 +1,71 @@
+class Main {
+	
+	static class Sorted sort(int[] d, int l, int r){
+		if (l+1 >= r) {
+			class Sorted single;
+			single = new Sorted();
+			single.init(d[l]);
+			return single;
+		}
+		int mid;
+		mid = (l+r+1)/2;
+		class Sorted result;
+		result = sort(d,l,mid);
+		result.merge(sort(d,mid,r));
+		return result;
+	}
+	
+    static void main() {
+		int[] d;
+		int n;
+		n = 100;
+		d = new int[n];
+		int i;
+		i = 0;
+		while (i < n) {
+			d[i] = i;
+			i = i + 1;
+		}
+        class Sorted sorted;
+		sorted = sort(d,0,n);
+		sorted.print();
+    }
+}
+
+class Sorted {
+	int[] list;
+	int size;
+	void init(int a){
+		list = new int[1];
+		list[0] = a;
+		size = 1;
+	}
+	void print(){
+		Print(list[0]," ",size,"\n");
+	}
+	void merge(class Sorted o){
+		int[] result;
+		result = new int[size+o.size];
+		int i;
+		int j;
+		int k;
+		i = 0;
+		j = 0;
+		while (i+j < size+o.size) {
+			if (i == size) {
+				result[i+j] = o.list[j];
+				j = j+1;
+			}
+			else if (j == o.size) {
+				result[i+j] = list[i];
+				i = i+1;
+			}
+			else if (list[i] < o.list[j]) {
+				result[i+j] = o.list[j];
+				j = j+1;
+			}
+		}
+		list = result;
+		size = size + o.size;
+	}
+}
