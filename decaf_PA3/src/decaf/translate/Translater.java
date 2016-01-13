@@ -366,7 +366,7 @@ public class Translater {
 	}
 
 	public void genCheckArrayIndex(Temp array, Temp index) {
-		Temp length = genLoad(array, -OffsetCounter.WORD_SIZE);
+		Temp length = genLoad(array, 0);
 		Temp cond = genLes(index, length);
 		Label err = Label.createLabel();
 		genBeqz(cond, err);

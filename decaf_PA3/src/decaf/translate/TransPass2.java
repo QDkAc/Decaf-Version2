@@ -38,13 +38,6 @@ public class TransPass2 extends Tree.Visitor {
 					.lookup("this")).getTemp();
 		}
 		tr.beginFunc(funcDefn.symbol);
-		if (funcDefn.symbol.isMain()) {
-			Temp size = tr.genLoadImm4(OffsetCounter.WORD_SIZE * tr.getVtables().size());
-			tr.genParm(size);
-			tr.genIntrinsicCall(Intrinsic.ALLOCATE);
-			for (VTable vtbl : tr.getVtables())
-				vtbl.index = tr.getVtables().indexOf(vtbl);
-		}
 		funcDefn.body.accept(this);
 		tr.endFunc();
 		currentThis = null;
@@ -139,8 +132,8 @@ public class TransPass2 extends Tree.Visitor {
 			Tree.Indexed arrayRef = (Tree.Indexed) left;
 			Temp esz = tr.genLoadImm4(OffsetCounter.WORD_SIZE);
 			Temp t = tr.genMul(arrayRef.index.val, esz);
-			Temp base = tr.genAdd(arrayRef.array.val, t);
-			tr.genStore(val, base, 0);
+			Temp shifted = tr.genAdd(t, esz);
+			tr.genStore(val, arrayRef.array.val, shifted);
 			break;
 		case MEMBER_VAR:
 			Tree.Ident varRef = (Tree.Ident) left;
@@ -292,7 +285,8 @@ public class TransPass2 extends Tree.Visitor {
 		
 		Temp esz = tr.genLoadImm4(OffsetCounter.WORD_SIZE);
 		Temp t = tr.genMul(indexed.index.val, esz);
-		indexed.val = tr.genLoad(indexed.array.val, t);
+		Temp shifted = tr.genAdd(t, esz);
+		indexed.val = tr.genLoad(indexed.array.val, shifted);
 	}
 
 	@Override
