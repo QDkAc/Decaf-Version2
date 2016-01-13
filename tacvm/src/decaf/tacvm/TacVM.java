@@ -39,6 +39,7 @@ public final class TacVM {
 				parser.getVTables(), parser.getEnterPoint());
 		// executor.dumpInsts();
 		executor.exec();
+		System.exit(0);
 	}
 
 	public static void main(String[] args) {
