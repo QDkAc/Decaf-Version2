@@ -156,7 +156,7 @@ public class Memory {
 		int id = freeBlocks[--numFreeBlocks];
 		// clear the block before it is used
 		Arrays.fill(memory, id << 10, (id << 10) + 1024, 0);
-		return freeBlocks[--numFreeBlocks];
+		return id;
 	}
 
 	private void recycleId(int id) {
@@ -189,7 +189,7 @@ public class Memory {
 		}
 		numFreeIds = 0;
 		for (int i = 0; i < MAX_IDENTIFIERS; i++) {
-			recycleId(i);
+			freeIds[numFreeIds++] = i;
 		}
 	}
 
