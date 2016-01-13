@@ -340,6 +340,13 @@ public abstract class BaseParser {
 		tacs.add(Tac.genTac(loc, text, Opcode.LOAD, getTemp(dest),
 				getTemp(base), getConstTempI4(offset)));
 	}
+	
+	protected void genLoad(Location loc, String dest, String base, String offset) {
+		String text;
+		text = dest + " = *(" + base + " + " + offset + ")";
+		tacs.add(Tac.genTac(loc, text, Opcode.LOADMOD, getTemp(dest),
+				getTemp(base), getTemp(offset)));
+	}
 
 	protected void genStore(Location loc, String src, String base, int offset) {
 		String text;
@@ -350,6 +357,13 @@ public abstract class BaseParser {
 		}
 		tacs.add(Tac.genTac(loc, text, Opcode.STORE, getTemp(src),
 				getTemp(base), getConstTempI4(offset)));
+	}
+	
+	protected void genStore(Location loc, String src, String base, String offset) {
+		String text;
+		text = "*(" + base + " + " + offset + ") = " + src;
+		tacs.add(Tac.genTac(loc, text, Opcode.STOREMOD, getTemp(src),
+				getTemp(base), getTemp(offset)));
 	}
 
 	private void checkParm() {
