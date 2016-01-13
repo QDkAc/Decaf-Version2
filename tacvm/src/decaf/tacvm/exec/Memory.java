@@ -286,6 +286,7 @@ public class Memory {
 			PageTable tab = pageTable[id];
 			for (int page : tab.pages)
 				recycleBlock(page);
+			pageTable[id] = null;
 		}
 
 		recycleId(id);
