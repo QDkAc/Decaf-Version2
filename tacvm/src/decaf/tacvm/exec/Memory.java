@@ -227,7 +227,7 @@ public class Memory {
 	}
 
 	private int logicToPhysic(int id, int offset) {
-		System.out.println("idlogic:" + id);
+		//System.out.println("idlogic:" + id);
 		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id] || offset % 4 != 0) {
 			throw new ExecuteException("bad memory access id = " + id
 					+ " offset = " + offset);

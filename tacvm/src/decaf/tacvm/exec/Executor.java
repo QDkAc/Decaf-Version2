@@ -158,7 +158,7 @@ public final class Executor {
 				@Override
 				public void run() {
 					synchronized (Executor.this) {
-						cyclicReferenceDetection();
+						//cyclicReferenceDetection();
 					}
 				}
 
@@ -410,12 +410,6 @@ public final class Executor {
 
 	private int[] stack = new int[DEFAULT_STACK_SIZE];
 
-	private int maxRunInsts = 100000;
-
-	public void setMaxRunInsts(int maxRunInsts) {
-		this.maxRunInsts = maxRunInsts;
-	}
-
 	private void checkStackAccess(int index) {
 		if (index >= stack.length) {
 			throw new ExecuteException("stack access index = " + index + " out of bounds");
@@ -460,7 +454,6 @@ public final class Executor {
 		pc = enterPoint;
 		rv = -1;
 
-		int instCount = 0;
 		while (pc != -1) {
 			synchronized (this) {
 				Inst inst = insts[pc++];
@@ -671,13 +664,6 @@ public final class Executor {
 						System.err.println("Caused by:");
 						e.printStackTrace(System.err);
 					}
-					// printStackTrace();
-					System.exit(0);
-				}
-				instCount++;
-				if (instCount > maxRunInsts) {
-					System.err.println("***Error: program has been run for a long time(more than 10W instructions)");
-					System.err.println("please check if there is a dead loop");
 					// printStackTrace();
 					System.exit(0);
 				}
