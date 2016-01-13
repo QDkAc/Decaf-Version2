@@ -12,7 +12,6 @@ class Main {
 		class Sorted result;
 		result = sort(d,l,mid);
 		result.merge(sort(d,mid,r));
-		result.print();
 		return result;
 	}
 	
