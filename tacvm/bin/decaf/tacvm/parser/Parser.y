@@ -158,6 +158,10 @@ Tac				:	TEMP '=' '(' TEMP '+' TEMP ')'
 				{
 					genLoad($2.loc, $1.sVal, $5.sVal, $7.iVal);
 				}
+				|	TEMP '=' '*' '(' TEMP '+' TEMP ')'
+				{
+					genLoad($2.loc, $1.sVal, $5.sVal, $7.sVal);
+				}
 				|	TEMP '=' '*' '(' TEMP '-' INT_CONST ')'
 				{
 					genLoad($2.loc, $1.sVal, $5.sVal, -$7.iVal);
@@ -165,6 +169,10 @@ Tac				:	TEMP '=' '(' TEMP '+' TEMP ')'
 				|	'*' '(' TEMP '+' INT_CONST ')' '=' TEMP
 				{
 					genStore($7.loc, $8.sVal, $3.sVal, $5.iVal);
+				}
+				|	'*' '(' TEMP '+' TEMP ')' '=' TEMP
+				{
+					genStore($7.loc, $8.sVal, $3.sVal, $5.sVal);
 				}
 				|	'*' '(' TEMP '-' INT_CONST ')' '=' TEMP
 				{
