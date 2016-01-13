@@ -1,0 +1,30 @@
+class Main {
+    static void main() {
+		int n;
+		n = 7;
+		
+		class Node[] array;
+		array = new class Node[n];
+		int i;
+		i = 0;
+		while (i < n) {
+			array[i] = new Node();
+			array[i].setId(i);
+			i = i + 1;
+		}
+		class Node one;
+		one = array[1];
+		array = new class Node[1];
+		Print(one.count());
+	}
+}
+
+class Node {
+	int id;
+	void setId(int id){
+		this.id = id;
+	}
+	int count(){
+		return id;
+	}
+}
