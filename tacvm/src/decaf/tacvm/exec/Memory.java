@@ -114,7 +114,7 @@ public class Memory {
 		}
 
 		int logicToPhysic(int at) {
-			return pages[at >> 10] + (at & 1023);
+			return (pages[at >> 10] << 10) + (at & 1023);
 		}
 	}
 
