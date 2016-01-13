@@ -1,0 +1,23 @@
+class Main {
+    static void main() {
+		int i;
+		i = 0;
+		class Item a;
+		while (i < 10) {
+			a = new Item();
+			a.setId(i);
+			a.printId();
+			i = i + 1;
+		}
+	}
+}
+
+class Item {
+	int id;
+	void setId(int id){
+		this.id = id;
+	}
+	void printId(){
+		Print(id, "\n");
+	}
+}
