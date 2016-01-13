@@ -648,11 +648,21 @@ public final class Executor {
 								/ 4]
 								+ inst.opr2, resultIndex);
 						break;
+					case LOADMOD:
+						resultIndex = fp + inst.opr0 / 4;
+						checkStackAccess(resultIndex);
+						stack[resultIndex] = memory.load(stack[fp + inst.opr1 / 4], stack[fp + inst.opr2 / 4]);
+						garbageCollector.assignHeapToStack(
+								stack[fp + inst.opr1 / 4] + stack[fp + inst.opr2 / 4], resultIndex);
+						break;
 					case STORE:
-						memory.store(stack[fp + inst.opr0 / 4], stack[fp
-								+ inst.opr1 / 4], inst.opr2);
-						garbageCollector.assignStackToHeap(fp + inst.opr0 / 4,
-								stack[fp + inst.opr1 / 4] + inst.opr2);
+						memory.store(stack[fp + inst.opr0 / 4], stack[fp + inst.opr1 / 4], inst.opr2);
+						garbageCollector.assignStackToHeap(fp + inst.opr0 / 4, stack[fp + inst.opr1 / 4] + inst.opr2);
+						break;
+					case STOREMOD:
+						memory.store(stack[fp + inst.opr0 / 4], stack[fp + inst.opr1 / 4], stack[fp + inst.opr2 / 4]);
+						garbageCollector.assignStackToHeap(
+								fp + inst.opr0 / 4, stack[fp + inst.opr1 / 4] + stack[fp + inst.opr2 / 4]);
 						break;
 					default:
 						if (inst.loc != null) {
