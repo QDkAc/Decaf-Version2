@@ -53,14 +53,17 @@ public class Memory {
 
 	private class ActiveIdList {
 		// a double linked list for all active ids
-		private int[] next = new int[MAX_IDENTIFIERS + 1];
-		private int[] prev = new int[MAX_IDENTIFIERS + 1];
+		private int[] next = new int[MAX_IDENTIFIERS + 2];
+		private int[] prev = new int[MAX_IDENTIFIERS + 2];
 
-		int first;
+		int first, last;
 
 		public ActiveIdList() {
 			first = MAX_IDENTIFIERS;
-			next[first] = prev[first] = -1;
+			last = MAX_IDENTIFIERS + 1;
+
+			next[first] = last;
+			prev[last] = first;
 		}
 
 		void add(int x) {
@@ -78,12 +81,12 @@ public class Memory {
 
 		int[] getAll() {
 			int cnt = 0;
-			for (int i = next[first]; i != -1; i = next[i]) {
+			for (int i = next[first]; i != last; i = next[i]) {
 				++cnt;
 			}
 			int[] ret = new int[cnt];
 			cnt = 0;
-			for (int i = next[first]; i != -1; i = next[i]) {
+			for (int i = next[first]; i != last; i = next[i]) {
 				ret[cnt++] = i;
 			}
 			return ret;
