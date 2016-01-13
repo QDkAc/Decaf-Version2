@@ -1,6 +1,7 @@
 package decaf.tacvm.exec;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,47 @@ public class Memory {
 
 	private int[] startAddr = new int[MAX_IDENTIFIERS];
 	private int[] objectSize = new int[MAX_IDENTIFIERS];
+
+	private class ActiveIdList {
+		// a double linked list for all active ids
+		private int[] next = new int[MAX_IDENTIFIERS + 1];
+		private int[] prev = new int[MAX_IDENTIFIERS + 1];
+
+		int first;
+
+		public ActiveIdList() {
+			first = MAX_IDENTIFIERS;
+			next[first] = prev[first] = -1;
+		}
+
+		void add(int x) {
+			next[x] = next[first];
+			prev[x] = first;
+
+			prev[next[x]] = x;
+			next[prev[x]] = x;
+		}
+
+		void remove(int x) {
+			prev[next[x]] = prev[x];
+			next[prev[x]] = next[x];
+		}
+
+		int[] getAll() {
+			int cnt = 0;
+			for (int i = next[first]; i != -1; i = next[i]) {
+				++cnt;
+			}
+			int[] ret = new int[cnt];
+			cnt = 0;
+			for (int i = next[first]; i != -1; i = next[i]) {
+				ret[cnt++] = i;
+			}
+			return ret;
+		}
+	}
+
+	private ActiveIdList activeIdList = new ActiveIdList();
 
 	private PageTable[] pageTable = new PageTable[MAX_IDENTIFIERS];
 	private SmallItemsBlock[] myBlock = new SmallItemsBlock[MAX_IDENTIFIERS];
@@ -108,11 +150,15 @@ public class Memory {
 		if (numFreeBlocks == 0) {
 			throw new ExecuteException("Insufficent Memory");
 		}
+		int id = freeBlocks[--numFreeBlocks];
+		// clear the block before it is used
+		Arrays.fill(memory, id << 10, (id << 10) + 1024, 0);
 		return freeBlocks[--numFreeBlocks];
 	}
 
 	private void recycleId(int id) {
 		active[id] = false;
+		activeIdList.remove(id);
 		freeIds[numFreeIds++] = id;
 	}
 
@@ -123,7 +169,12 @@ public class Memory {
 
 		int id = freeIds[--numFreeIds];
 		active[id] = true;
+		activeIdList.add(id);
 		return id;
+	}
+
+	public int[] getAllObject() {
+		return activeIdList.getAll();
 	}
 
 	public Memory() {
@@ -219,8 +270,9 @@ public class Memory {
 			assert (block.numActiveObject >= 0);
 			if (block.numActiveObject == 0) {
 				block.clear();
-				if (currentBlock != block) {
-					recycleBlock(block.page);
+				recycleBlock(block.page);
+				if (currentBlock == block) {
+					currentBlock = null;
 				}
 			}
 		} else {
