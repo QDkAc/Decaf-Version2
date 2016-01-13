@@ -64,6 +64,10 @@ class Sorted {
 				result[i+j] = o.list[j];
 				j = j+1;
 			}
+			else {
+				result[i+j] = list[i];
+				i = i+1;
+			}
 		}
 		list = result;
 		size = size + o.size;
