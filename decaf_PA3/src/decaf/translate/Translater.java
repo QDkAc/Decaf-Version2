@@ -399,17 +399,6 @@ public class Translater {
 		genParm(size);
 		Temp obj = genIntrinsicCall(Intrinsic.ALLOCATE);
 		genStore(length, obj, 0);
-		Label loop = Label.createLabel();
-		Label exit = Label.createLabel();
-		Temp zero = genLoadImm4(0);
-		Temp offest = genLoadImm4(0);
-		genMark(loop);
-		append(Tac.genSub(size, size, unit));
-		genBeqz(size, exit);
-		append(Tac.genAdd(offest, offest, unit));
-		genStore(zero, obj, offest);
-		genBranch(loop);
-		genMark(exit);
 		return obj;
 	}
 
