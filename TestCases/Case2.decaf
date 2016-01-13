@@ -1,0 +1,14 @@
+class Main {
+    static void main() {
+		class Item[] d;
+		d = new class Item[5];
+		d[0] = new Item();
+		d = d[0].sequence(5);
+	}
+}
+
+class Item {
+	class Item[] sequence(int n){
+		return new class Item[n];
+	}
+}
