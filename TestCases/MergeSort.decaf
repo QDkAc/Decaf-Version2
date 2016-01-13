@@ -12,6 +12,7 @@ class Main {
 		class Sorted result;
 		result = sort(d,l,mid);
 		result.merge(sort(d,mid,r));
+		result.print();
 		return result;
 	}
 	
@@ -41,14 +42,19 @@ class Sorted {
 		size = 1;
 	}
 	void print(){
-		Print(list[0]," ",size,"\n");
+		int i;
+		i = 0;
+		while (i < size) {
+			Print(list[i]," ");
+			i = i + 1;
+		}
+		Print("\n");
 	}
 	void merge(class Sorted o){
 		int[] result;
 		result = new int[size+o.size];
 		int i;
 		int j;
-		int k;
 		i = 0;
 		j = 0;
 		while (i+j < size+o.size) {
