@@ -220,13 +220,14 @@ public class Memory {
 				addr = currentBlock.alloc(size);
 			}
 			startAddr[id] = addr;
-			myBlock[addr] = currentBlock;
+			myBlock[id] = currentBlock;
 		}
 
 		return id;
 	}
 
 	private int logicToPhysic(int id, int offset) {
+		System.out.println("idlogic:" + id);
 		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id] || offset % 4 != 0) {
 			throw new ExecuteException("bad memory access id = " + id
 					+ " offset = " + offset);
@@ -254,6 +255,7 @@ public class Memory {
 	}
 
 	public int getBlockSize(int id) {
+		System.out.println("id:" + id);
 		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id]) {
 			throw new ExecuteException("bad memory access id = " + id);
 		}
