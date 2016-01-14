@@ -23,7 +23,7 @@ _Main_New:
 FUNCTION(_Item_New) {
 memo ''
 _Item_New:
-    _T5 = 4
+    _T5 = 8
     parm _T5
     _T6 =  call _Alloc
     _T7 = VTBL <_Item>
@@ -89,32 +89,35 @@ _L16:
     _T38 = (_T31 * _T37)
     _T39 = (_T38 + _T37)
     _T40 = *(_T8 + _T39)
-    _T41 = 5
     parm _T40
-    parm _T41
-    _T42 = *(_T40 + 0)
-    _T43 = *(_T42 + 8)
-    _T44 =  call _T43
-    _T8 = _T44
+    parm _T8
+    _T41 = *(_T40 + 0)
+    _T42 = *(_T41 + 8)
+    _T43 =  call _T42
+    _T8 = _T43
+	call _GC
 }
 
 FUNCTION(_Item.sequence) {
 memo '_T0:4 _T1:8'
 _Item.sequence:
-    _T45 = 0
-    _T46 = (_T1 < _T45)
-    if (_T46 == 0) branch _L17
-    _T47 = "Decaf runtime error: Cannot create negative-sized array\n"
-    parm _T47
+    _T44 = *(_T0 + 4)
+    *(_T0 + 4) = _T1
+    _T45 = 5
+    _T46 = 0
+    _T47 = (_T45 < _T46)
+    if (_T47 == 0) branch _L17
+    _T48 = "Decaf runtime error: Cannot create negative-sized array\n"
+    parm _T48
     call _PrintString
     call _Halt
 _L17:
-    _T48 = 4
-    _T49 = (_T48 * _T1)
-    _T50 = (_T48 + _T49)
-    parm _T50
-    _T51 =  call _Alloc
-    *(_T51 + 0) = _T1
-    return _T51
+    _T49 = 4
+    _T50 = (_T49 * _T45)
+    _T51 = (_T49 + _T50)
+    parm _T51
+    _T52 =  call _Alloc
+    *(_T52 + 0) = _T45
+    return _T52
 }
 

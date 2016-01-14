@@ -203,6 +203,7 @@ _L30:
     _T101 =  call _T100
     parm _T101
     call _PrintInt
+	call _GC
 }
 
 FUNCTION(_Node.setNext) {

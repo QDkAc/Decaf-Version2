@@ -3,12 +3,14 @@ class Main {
 		class Item[] d;
 		d = new class Item[5];
 		d[0] = new Item();
-		d = d[0].sequence(5);
+		d = d[0].sequence(d);
 	}
 }
 
 class Item {
-	class Item[] sequence(int n){
-		return new class Item[n];
+	class Item[] d;
+	class Item[] sequence(class Item[] d){
+		this.d = d;
+		return new class Item[5];
 	}
 }
