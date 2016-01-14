@@ -132,7 +132,7 @@ class Node {
 				left.setArray(n);
 				left.parent = this;
 				return left;
-			}
+			}I
 			else {
 				return left.insert(n);
 			}

@@ -1,6 +1,0 @@
-Memory at address 3145726 will be disposed due to zero ref count
-	Current inst: leaveFunc
-Memory at address 3145727 will be disposed due to zero ref count
-	Current inst: leaveFunc
-Memory at address 3145718 will be disposed due to zero ref count
-	Current inst: leaveFunc
