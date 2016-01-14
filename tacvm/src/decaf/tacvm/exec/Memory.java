@@ -187,7 +187,7 @@ public class Memory {
 
 		}
 		numFreeIds = 0;
-		for (int i = 0; i < MAX_IDENTIFIERS; i++) {
+		for (int i = 1; i < MAX_IDENTIFIERS; i++) {
 			freeIds[numFreeIds++] = i;
 		}
 	}
