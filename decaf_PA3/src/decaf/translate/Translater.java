@@ -412,27 +412,6 @@ public class Translater {
 		Temp size = genLoadImm4(c.getSize());
 		genParm(size);
 		Temp newObj = genIntrinsicCall(Intrinsic.ALLOCATE);
-		int time = c.getSize() / OffsetCounter.WORD_SIZE - 1;
-		if (time != 0) {
-			Temp zero = genLoadImm4(0);
-			if (time < 5) {
-				for (int i = 0; i < time; i++) {
-					genStore(zero, newObj, OffsetCounter.WORD_SIZE * (i + 1));
-				}
-			} else {
-				Temp unit = genLoadImm4(OffsetCounter.WORD_SIZE);
-				Label loop = Label.createLabel();
-				Label exit = Label.createLabel();
-				newObj = genAdd(newObj, size);
-				genMark(loop);
-				genAssign(newObj, genSub(newObj, unit));
-				genAssign(size, genSub(size, unit));
-				genBeqz(size, exit);
-				genStore(zero, newObj, 0);
-				genBranch(loop);
-				genMark(exit);
-			}
-		}
 		genStore(genLoadVTable(c.getVtable()), newObj, 0);
 		genReturn(newObj);
 		endFunc();
