@@ -1,0 +1,228 @@
+class Splay {
+	
+	class Node root;
+	
+	void rightRotate(class Node x){
+		class Node y;
+		y = x.rightRotate();
+		if (root == y) {
+			root = x;
+		}
+	}
+	
+	void leftRotate(class Node x){
+		class Node y;
+		y = x.leftRotate();
+		if (root == y) {
+			root = x;
+		}
+	}
+	
+	void splay(class Node x) {
+		while (x != root) {
+			if (x.getP() == root) {
+				if (root.getL() == x) {
+					rightRotate(x);
+				}
+				else {
+					leftRotate(x);
+				}
+			}
+			else {
+				class Node y;
+				class Node z;
+				y = x.getP();
+				z = y.getP();
+				if (z.getL() == y) {
+					if (y.getL() == x) {rightRotate(y);}
+					else {leftRotate(x);}
+					rightRotate(x);
+				}
+				else {
+					if (y.getR() == x) {leftRotate(y);}
+					else {rightRotate(x);}
+					leftRotate(x);
+				}
+			}
+		}
+	}
+	
+	void insert(int n){
+		if (root == null) {
+			root = new Node();
+			root.setArray(n);
+		}
+		else {
+			class Node x;
+			x = root.insert(n);
+			splay(x);
+		}
+	}
+	
+	void remove(int n) {
+		class Node x;
+		x = root.find(n);
+		splay(x);
+		if (root.getL() == null) {
+			root = root.getR();
+			if (root != null) {
+				root.setP(null);
+			}
+		}
+		else {
+			x = root.getR();
+			root = root.getL();
+			root.setP(null);
+			class Node y;
+			y = root.findMax();
+			splay(y);
+			if (x != null) {
+				root.setR(x);
+				x.setP(root);
+			}
+		}
+	}
+	
+    int findMax() {
+		return root.findMax().getSize();
+	}
+}
+
+class Main {
+	
+	static void main() {
+		class Splay tree;
+		tree = new Splay();
+		tree.insert(100);
+		tree.insert(50);
+		tree.insert(70);
+		tree.remove(100);
+		Print(tree.findMax());
+	}
+	
+}
+
+class Node {
+
+	class Node left;
+	class Node right;
+	class Node parent;
+	int[] array;
+	int size;
+
+	void setArray(int n) {
+		array = new int[n];
+		size = n;
+	}
+	
+	class Node getL() {return left;}
+	class Node getR() {return right;}
+	class Node getP() {return parent;}
+	
+	void setL(class Node n) {left = n;}
+	void setR(class Node n) {right = n;}
+	void setP(class Node n) {parent = n;}
+	
+	int getSize() {return size;}
+	
+	class Node insert(int n) {
+		if (n < size) {
+			if (left == null) {
+				left = new Node();
+				left.setArray(n);
+				left.parent = this;
+				return left;
+			}
+			else {
+				return left.insert(n);
+			}
+		}
+		else {
+			if (right == null) {
+				right = new Node();
+				right.setArray(n);
+				right.parent = this;
+				return right;
+			}
+			else {
+				return right.insert(n);
+			}
+		}
+	}
+	
+	class Node find(int n) {
+		if (n == size) {
+			return this;
+		}
+		if (n < size) {
+			if (left == null) {
+				Print("Failed");
+				return null;
+			}
+			else {
+				return left.find(n);
+			}
+		}
+		else {
+			if (right == null) {
+				Print("Failed");
+				return null;
+			}
+			else {
+				return right.find(n);
+			}
+		}
+	}
+	
+	class Node findMax() {
+		if (right == null) {
+			return this;
+		}
+		else {
+			return right.findMax();
+		}
+	}
+	
+	class Node rightRotate() {
+		class Node y;
+		y = parent;
+		y.left = right;
+		if (right != null) {
+			right.parent = y;
+		}
+		parent = y.parent;
+		if (y.parent != null) {
+			if (y.parent.left == y) {
+				y.parent.left = this;
+			}
+			else {
+				y.parent.right = this;
+			}
+		}
+		right = y;
+		y.parent = this;
+		return y;
+	}
+	
+	class Node leftRotate() {
+		class Node y;
+		y = parent;
+		y.right = left;
+		if (left != null) {
+			left.parent = y;
+		}
+		parent = y.parent;
+		if (y.parent != null) {
+			if (y.parent.left == y) {
+				y.parent.left = this;
+			}
+			else {
+				y.parent.right = this;
+			}
+		}
+		left = y;
+		y.parent = this;
+		return y;
+	}
+
+}
