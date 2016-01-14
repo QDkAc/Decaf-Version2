@@ -17,28 +17,82 @@ import decaf.tacvm.parser.Parser;
 
 public final class TacVM {
 	private InputStream input = System.in;
-	private PrintWriter log;
+	private PrintWriter memoryLog, garbageCollectorLog;
+	private int cyclicReferenceDetectionPeriod = -1;
 
 	public TacVM(String[] args) {
-		try {
-			input = new BufferedInputStream(new FileInputStream(args[0]));
-		} catch (FileNotFoundException e) {
-			System.err.println("File " + args[0] + " not found");
+		// try {
+		// input = new BufferedInputStream(new FileInputStream(args[0]));
+		// } catch (FileNotFoundException e) {
+		// System.err.println("File " + args[0] + " not found");
+		// System.exit(1);
+		// }
+		//
+		// if (args.length > 1) {
+		// try {
+		// log = new PrintWriter(args[1]);
+		// } catch (FileNotFoundException e) {
+		// System.err.println("File " + args[1] + " not found");
+		// System.exit(1);
+		// }
+		// } else {
+		// log = new PrintWriter(new OutputStream() {
+		// @Override
+		// public void write(int b) throws IOException {
+		// }
+		// });
+		// }
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-m")) {
+				i++;
+				if (i < args.length) {
+					try {
+						memoryLog = new PrintWriter(args[i]);
+					} catch (Exception e) {
+						System.err.println("Can not open file " + args[i]);
+					}
+				}
+			} else if (args[i].equals("-g")) {
+				i++;
+				if (i < args.length) {
+					try {
+						garbageCollectorLog = new PrintWriter(args[i]);
+					} catch (Exception e) {
+						System.err.println("Can not open file " + args[i]);
+					}
+				}
+
+			} else if (args[i].equals("-p")) {
+				i++;
+				if (i < args.length) {
+					cyclicReferenceDetectionPeriod = Integer.parseInt(args[i]);
+				}
+			} else {
+				try {
+					input = new BufferedInputStream(new FileInputStream(args[0]));
+				} catch (FileNotFoundException e) {
+					System.err.println("File " + args[0] + " not found");
+					System.exit(1);
+				}
+			}
+		}
+		if (input == null) {
+			System.err.println("Input file not specified");
 			System.exit(1);
 		}
-
-		if (args.length > 1) {
-			try {
-				log = new PrintWriter(args[1]);
-			} catch (FileNotFoundException e) {
-				System.err.println("File " + args[1] + " not found");
-				System.exit(1);
-			}
-		} else {
-			log = new PrintWriter(new OutputStream() {
+		if (garbageCollectorLog == null) {
+			garbageCollectorLog = new PrintWriter(new OutputStream() {
 				@Override
 				public void write(int b) throws IOException {
 				}
+			});
+		}
+		if (memoryLog == null) {
+			memoryLog = new PrintWriter(new OutputStream() {
+				@Override
+				public void write(int b) throws IOException {
+				}
+
 			});
 		}
 	}
@@ -51,8 +105,10 @@ public final class TacVM {
 		parser.parse();
 		Errs.checkPoint(new PrintWriter(System.err));
 		Executor executor = new Executor();
-		executor.init(parser.getStringTable(), parser.getTacs(),
-				parser.getVTables(), parser.getEnterPoint(), log);
+		System.out.println(memoryLog);
+
+		executor.init(parser.getStringTable(), parser.getTacs(), parser.getVTables(), parser.getEnterPoint(), memoryLog,
+				garbageCollectorLog, cyclicReferenceDetectionPeriod);
 		// executor.dumpInsts();
 		executor.exec();
 		System.exit(0);
