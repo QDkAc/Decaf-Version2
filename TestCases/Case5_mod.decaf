@@ -1,11 +1,10 @@
-class Test {
+class Main {
 	
-	class Node[] array;
-	
-    void test() {
+    static class Node one() {
 		int n;
 		n = 7;
 		
+		class Node[] array;
 		array = new class Node[n];
 		int i;
 		i = 0;
@@ -19,24 +18,16 @@ class Test {
 			array[i].setNext(array[(i*2)%n]);
 			i = i + 1;
 		}
+		return array[1];
 		
 	}
 	
-	void main() {
+	static void main() {
 		class Node one;
-		one = array[1];
-		array = new class Node[1];
+		one = one();
 		Print(one.count());
 	}
-}
-
-class Main {
-	static void main() {
-		class Test test;
-		test = new Test();
-		test.test();
-		test.main();
-	}
+	
 }
 
 class Node {
