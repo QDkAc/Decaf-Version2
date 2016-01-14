@@ -35,7 +35,11 @@ public final class TacVM {
 				System.exit(1);
 			}
 		} else {
-			log = new PrintWriter(System.out);
+			log = new PrintWriter(new OutputStream() {
+				@Override
+				public void write(int b) throws IOException {
+				}
+			});
 		}
 	}
 
@@ -48,7 +52,7 @@ public final class TacVM {
 		Errs.checkPoint(new PrintWriter(System.err));
 		Executor executor = new Executor();
 		executor.init(parser.getStringTable(), parser.getTacs(),
-				parser.getVTables(), parser.getEnterPoint());
+				parser.getVTables(), parser.getEnterPoint(), log);
 		// executor.dumpInsts();
 		executor.exec();
 		System.exit(0);

@@ -456,7 +456,7 @@ public final class Executor {
 
 	public void init(List<String> stringTable, List<Tac> tacs, int[] vtable,
 			int enterPoint, PrintWriter log) {
-		memory = new Memory();
+		memory = new Memory(log);
 		memory.setVTable(vtable);
 		this.stringTable = stringTable;
 		this.log = log;

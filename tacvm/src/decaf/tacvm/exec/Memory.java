@@ -206,14 +206,17 @@ public class Memory {
 
 		int id = getFreeId();
 		objectSize[id] = size;
+		log.println(id + " allocating, size: " + size * 4);
 
 		if (size > THRESHOLD) {// big item
+			log.println("big item");
 			int numPages = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
 			PageTable tab = new PageTable(numPages);
 
 			pageTable[id] = tab;
 			startAddr[id] = -1;
 		} else {// small item
+			log.println("small item");
 			if (currentBlock == null) {
 				currentBlock = blocks[getFreeBlock()];
 			}
@@ -226,7 +229,7 @@ public class Memory {
 			myBlock[id] = currentBlock;
 			Arrays.fill(memory, addr, addr + size, 0);
 		}
-		System.out.println(id + " allocated");
+		log.println(id + " allocated");
 		return id;
 	}
 
@@ -259,10 +262,10 @@ public class Memory {
 	}
 
 	public int getBlockSize(int id) {
-		System.out.println("id:" + id);
 		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id]) {
 			throw new ExecuteException("bad memory access id = " + id);
 		}
+		log.println("get block size:" + id + ", size:" + objectSize[id]);
 		return objectSize[id];
 	}
 
@@ -271,9 +274,10 @@ public class Memory {
 	}
 
 	public void dispose(int id) {
-		System.out.println(id + " disposed");
+		log.println(id + " disposeing:");
 		assert (active[id]);
 		if (startAddr[id] != -1) {
+			log.println("small item");
 			// smallItem
 			SmallItemsBlock block = myBlock[id];
 			block.numActiveObject--;
@@ -286,6 +290,7 @@ public class Memory {
 				}
 			}
 		} else {
+			log.println("big item");
 			// bigItem
 			PageTable tab = pageTable[id];
 			for (int page : tab.pages)
@@ -294,7 +299,8 @@ public class Memory {
 		}
 
 		recycleId(id);
+		log.println(id + " disposed:");
 
-		System.out.println("Garbage detected: address @ " + id);
+		log.println("Garbage detected: address @ " + id);
 	}
 }
