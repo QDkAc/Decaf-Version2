@@ -10,13 +10,13 @@ import java.util.Map;
 
 public class Memory {
 	// the whole logic naming space start from 0
-	public static int BLOCK_SIZE = 1024;// a page is 1024 bit
+	public static int PAGE_SIZE = 1024;// a page is 1024 ints
 
-	public static int NUM_BLOCKS = 1 << 15;// number of blocks
+	public static int NUM_PAGES = 1 << 15;// number of blocks
 
-	public static int THRESHOLD = BLOCK_SIZE / 2;
+	public static int THRESHOLD = PAGE_SIZE / 2;
 
-	public static int MAX_IDENTIFIERS = 3 << 20;// maximum number of objects
+	public static int MAX_NUM_IDENTIFIERS = 3 << 20;// maximum number of objects
 
 	// vtable: keep the same
 	private int[] vtable;
@@ -41,27 +41,27 @@ public class Memory {
 
 	// new part
 	// the start of block i is i*1024
-	private int[] memory = new int[BLOCK_SIZE * NUM_BLOCKS];
-	private int[] freeBlocks = new int[NUM_BLOCKS];
-	private int numFreeBlocks;
+	private int[] memory = new int[PAGE_SIZE * NUM_PAGES];
+	private int[] freePages = new int[NUM_PAGES];
+	private int numFreePages;
 
-	private int[] freeIds = new int[MAX_IDENTIFIERS];
-	private boolean[] active = new boolean[MAX_IDENTIFIERS];
+	private int[] freeIds = new int[MAX_NUM_IDENTIFIERS];
+	private boolean[] active = new boolean[MAX_NUM_IDENTIFIERS];
 	private int numFreeIds;
 
-	private int[] startAddr = new int[MAX_IDENTIFIERS];
-	private int[] objectSize = new int[MAX_IDENTIFIERS];
+	private int[] startAddr = new int[MAX_NUM_IDENTIFIERS];
+	private int[] objectSize = new int[MAX_NUM_IDENTIFIERS];
 
 	private class ActiveIdList {
 		// a double linked list for all active ids
-		private int[] next = new int[MAX_IDENTIFIERS + 2];
-		private int[] prev = new int[MAX_IDENTIFIERS + 2];
+		private int[] next = new int[MAX_NUM_IDENTIFIERS + 2];
+		private int[] prev = new int[MAX_NUM_IDENTIFIERS + 2];
 
 		int first, last;
 
 		public ActiveIdList() {
-			first = MAX_IDENTIFIERS;
-			last = MAX_IDENTIFIERS + 1;
+			first = MAX_NUM_IDENTIFIERS;
+			last = MAX_NUM_IDENTIFIERS + 1;
 
 			next[first] = last;
 			prev[last] = first;
@@ -96,12 +96,10 @@ public class Memory {
 
 	private ActiveIdList activeIdList = new ActiveIdList();
 
-	private PageTable[] pageTable = new PageTable[MAX_IDENTIFIERS];
-	private SmallItemsBlock[] myBlock = new SmallItemsBlock[MAX_IDENTIFIERS];
+	private PageTable[] pageTable = new PageTable[MAX_NUM_IDENTIFIERS];
+	private SmallItemsPage[] myPage = new SmallItemsPage[MAX_NUM_IDENTIFIERS];
 
-	private SmallItemsBlock[] blocks = new SmallItemsBlock[NUM_BLOCKS];
-
-	Map<Integer, Integer> startAdrToSize = new HashMap<Integer, Integer>();
+	private SmallItemsPage[] pages = new SmallItemsPage[NUM_PAGES];
 
 	// for big object
 	private class PageTable {
@@ -110,7 +108,7 @@ public class Memory {
 		public PageTable(int numPages) {
 			pages = new int[numPages];
 			for (int i = 0; i < numPages; i++) {
-				pages[i] = getFreeBlock();
+				pages[i] = getFreePage();
 				Arrays.fill(memory, pages[i] << 10, (pages[i] + 1) << 10, 0);
 			}
 		}
@@ -121,7 +119,7 @@ public class Memory {
 	}
 
 	//
-	private class SmallItemsBlock {
+	private class SmallItemsPage {
 		int page;
 		int currentAddr;
 		int numActiveObject;
@@ -131,13 +129,13 @@ public class Memory {
 			numActiveObject = 0;
 		}
 
-		public SmallItemsBlock(int page) {
+		public SmallItemsPage(int page) {
 			this.page = page;
 			clear();
 		}
 
 		int alloc(int num) {
-			int rest = BLOCK_SIZE - currentAddr;
+			int rest = PAGE_SIZE - currentAddr;
 			if (rest < num)
 				return -1;
 			int addr = (page << 10) + currentAddr;
@@ -147,15 +145,15 @@ public class Memory {
 		}
 	}
 
-	private void recycleBlock(int blockId) {
-		freeBlocks[numFreeBlocks++] = blockId;
+	private void recyclePage(int pageId) {
+		freePages[numFreePages++] = pageId;
 	}
 
-	private int getFreeBlock() {
-		if (numFreeBlocks == 0) {
+	private int getFreePage() {
+		if (numFreePages == 0) {
 			throw new ExecuteException("Insufficent Memory");
 		}
-		int id = freeBlocks[--numFreeBlocks];
+		int id = freePages[--numFreePages];
 		return id;
 	}
 
@@ -184,19 +182,19 @@ public class Memory {
 
 	public Memory(PrintWriter log) {
 		this.log = log;
-		numFreeBlocks = 0;
-		for (int i = 0; i < NUM_BLOCKS; i++) {
-			recycleBlock(i);
-			blocks[i] = new SmallItemsBlock(i);
+		numFreePages = 0;
+		for (int i = 0; i < NUM_PAGES; i++) {
+			recyclePage(i);
+			pages[i] = new SmallItemsPage(i);
 
 		}
 		numFreeIds = 0;
-		for (int i = 1; i < MAX_IDENTIFIERS; i++) {
+		for (int i = 1; i < MAX_NUM_IDENTIFIERS; i++) {
 			freeIds[numFreeIds++] = i;
 		}
 	}
 
-	SmallItemsBlock currentBlock;
+	SmallItemsPage currentPage;
 
 	public int alloc(int size) {
 		if (size < 0 || size % 4 != 0) {
@@ -206,36 +204,41 @@ public class Memory {
 
 		int id = getFreeId();
 		objectSize[id] = size;
-		log.println(id + " allocating, size: " + size * 4);
+		log.println("Allocating size: " + size * 4);
 
-		if (size > THRESHOLD) {// big item
-			log.println("big item");
-			int numPages = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+		if (size > THRESHOLD) {// big block
+			log.println("\tIt is a big block");
+			int numPages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
 			PageTable tab = new PageTable(numPages);
+			log.println("\t\tAllocated " + numPages + " pages");
 
 			pageTable[id] = tab;
 			startAddr[id] = -1;
 		} else {// small item
-			log.println("small item");
-			if (currentBlock == null) {
-				currentBlock = blocks[getFreeBlock()];
+			log.println("\tIt is a small block");
+			if (currentPage == null) {
+				currentPage = pages[getFreePage()];
+				log.println("\t\tUsing a new page " + currentPage.page);
 			}
-			int addr = currentBlock.alloc(size);
+			int addr = currentPage.alloc(size);
 			if (addr == -1) {
-				currentBlock = blocks[getFreeBlock()];
-				addr = currentBlock.alloc(size);
+				currentPage = pages[getFreePage()];
+				addr = currentPage.alloc(size);
+				log.println("\t\tUsing a new page " + currentPage.page);
 			}
 			startAddr[id] = addr;
-			myBlock[id] = currentBlock;
+			myPage[id] = currentPage;
 			Arrays.fill(memory, addr, addr + size, 0);
+			log.println("\t\tstarting physical address: " + addr);
 		}
-		log.println(id + " allocated");
+		log.println("\tAllocated to logic address " + id);
 		return id;
 	}
 
 	private int logicToPhysic(int id, int offset) {
 		// System.out.println("idlogic:" + id);
-		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id] || offset % 4 != 0) {
+		if (id < 0 || id >= MAX_NUM_IDENTIFIERS || !active[id]
+				|| offset % 4 != 0) {
 			throw new ExecuteException("bad memory access id = " + id
 					+ " offset = " + offset);
 		}
@@ -262,10 +265,9 @@ public class Memory {
 	}
 
 	public int getBlockSize(int id) {
-		if (id < 0 || id >= MAX_IDENTIFIERS || !active[id]) {
+		if (id < 0 || id >= MAX_NUM_IDENTIFIERS || !active[id]) {
 			throw new ExecuteException("bad memory access id = " + id);
 		}
-		log.println("get block size:" + id + ", size:" + objectSize[id]);
 		return objectSize[id];
 	}
 
@@ -274,33 +276,33 @@ public class Memory {
 	}
 
 	public void dispose(int id) {
-		log.println(id + " disposeing:");
+		log.println("Disposing logic address " + id);
 		assert (active[id]);
 		if (startAddr[id] != -1) {
-			log.println("small item");
+			log.println("\tIt is a small block");
 			// smallItem
-			SmallItemsBlock block = myBlock[id];
+			SmallItemsPage block = myPage[id];
 			block.numActiveObject--;
 			assert (block.numActiveObject >= 0);
 			if (block.numActiveObject == 0) {
 				block.clear();
-				recycleBlock(block.page);
-				if (currentBlock == block) {
-					currentBlock = null;
+				recyclePage(block.page);
+				if (currentPage == block) {
+					currentPage = null;
 				}
+				log.println("\tPage " + block.page
+						+ " becomes empty and is recycled.");
 			}
 		} else {
-			log.println("big item");
-			// bigItem
+			log.println("\tIt is a big block");
 			PageTable tab = pageTable[id];
-			for (int page : tab.pages)
-				recycleBlock(page);
+			for (int page : tab.pages) {
+				recyclePage(page);
+				log.println("\t\tRecycled page " + page);
+			}
 			pageTable[id] = null;
 		}
 
 		recycleId(id);
-		log.println(id + " disposed:");
-
-		log.println("Garbage detected: address @ " + id);
 	}
 }

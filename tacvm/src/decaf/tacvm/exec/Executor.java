@@ -150,9 +150,10 @@ public final class Executor {
 		private HeapAddress rvReferenceMemory;
 		private Integer rvReferenceStringTable;
 		private PrintWriter log;
+
 		public GarbageCollector(long period, PrintWriter log) {
 			this.log = log;
-			if (period == -1){
+			if (period == -1) {
 				period = 1000;
 			}
 			memoryReferenceCount = new HashMap<HeapAddress, Integer>();
@@ -176,10 +177,9 @@ public final class Executor {
 			}, 0, period);
 		}
 
-
 		void setRvReferenceMemory(HeapAddress address) {
 			clearRv();
-			//System.out.println("rv is now referencing memory " + address);
+			// System.out.println("rv is now referencing memory " + address);
 			rvReferenceMemory = address;
 			if (memoryReferenceCount.containsKey(address))
 				memoryReferenceCount.put(address,
@@ -249,7 +249,8 @@ public final class Executor {
 				memoryReferenceCount.put(rvReferenceMemory,
 						memoryReferenceCount.get(rvReferenceMemory) - 1);
 				if (memoryReferenceCount.get(rvReferenceMemory) == 0) {
-					log.println("Memory at address " + rvReferenceMemory + " will be disposed due to zero ref count");
+					log.println("Memory at address " + rvReferenceMemory
+							+ " will be disposed due to zero ref count");
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 					clearBlock(rvReferenceMemory.base);
 					memory.dispose(rvReferenceMemory.base);
@@ -260,8 +261,11 @@ public final class Executor {
 				stringTableReferenceCount.put(rvReferenceStringTable,
 						memoryReferenceCount.get(rvReferenceStringTable) - 1);
 				if (stringTableReferenceCount.get(rvReferenceStringTable) == 0) {
-					log.println("String Table at address " + rvReferenceStringTable + " will be disposed due to zero ref count");
-					log.println("\tContent inside this block: " + stringTable.get(rvReferenceStringTable));
+					log.println("String Table at address "
+							+ rvReferenceStringTable
+							+ " will be disposed due to zero ref count");
+					log.println("\tContent inside this block: "
+							+ stringTable.get(rvReferenceStringTable));
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 				}
 				rvReferenceStringTable = null;
@@ -274,7 +278,8 @@ public final class Executor {
 				HeapAddress to = stackReferenceMemory.get(address);
 				memoryReferenceCount.put(to, memoryReferenceCount.get(to) - 1);
 				if (memoryReferenceCount.get(to) == 0) {
-					log.println("Memory at address " + to.base + " will be disposed due to zero ref count");
+					log.println("Memory at address " + to.base
+							+ " will be disposed due to zero ref count");
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 					clearBlock(to.base);
 					memory.dispose(to.base);
@@ -287,8 +292,10 @@ public final class Executor {
 				stringTableReferenceCount.put(to,
 						stringTableReferenceCount.get(to) - 1);
 				if (stringTableReferenceCount.get(to) == 0) {
-					log.println("String Table at address " + to + " will be disposed due to zero ref count");
-					log.println("\tContent inside this block: " + stringTable.get(to));
+					log.println("String Table at address " + to
+							+ " will be disposed due to zero ref count");
+					log.println("\tContent inside this block: "
+							+ stringTable.get(to));
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 				}
 				stackReferenceStringTable.remove(address);
@@ -301,7 +308,8 @@ public final class Executor {
 				HeapAddress to = heapReferenceMemory.get(address);
 				memoryReferenceCount.put(to, memoryReferenceCount.get(to) - 1);
 				if (memoryReferenceCount.get(to) == 0) {
-					log.println("Memory at address " + to.base + " will be disposed due to zero ref count");
+					log.println("Memory at address " + to.base
+							+ " will be disposed due to zero ref count");
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 					clearBlock(to.base);
 					memory.dispose(to.base);
@@ -314,8 +322,10 @@ public final class Executor {
 				stringTableReferenceCount.put(to,
 						stringTableReferenceCount.get(to) - 1);
 				if (stringTableReferenceCount.get(to) == 0) {
-					log.println("String Table at address " + to + " will be disposed due to zero ref count");
-					log.println("\tContent inside this block: " + stringTable.get(to));
+					log.println("String Table at address " + to
+							+ " will be disposed due to zero ref count");
+					log.println("\tContent inside this block: "
+							+ stringTable.get(to));
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 				}
 				heapReferenceStringTable.remove(address);
@@ -416,8 +426,10 @@ public final class Executor {
 			}
 			int[] blocks = memory.getAllObject();
 			for (int block : blocks)
-				if (visitedNodes.contains(new HeapAddress(block, 0)) == false){
-					log.println("Memory at address " + block + " will be disposed due to cyclic reference detection");
+				if (visitedNodes.contains(new HeapAddress(block, 0)) == false) {
+					log.println("Memory at address "
+							+ block
+							+ " will be disposed due to cyclic reference detection");
 					memory.dispose(block);
 				}
 		}
@@ -464,10 +476,10 @@ public final class Executor {
 	}
 
 	private PrintWriter memoryLog, garbageCollectorLog;
-	
 
 	public void init(List<String> stringTable, List<Tac> tacs, int[] vtable,
-			int enterPoint, PrintWriter memoryLog, PrintWriter garbageCollectorLog, int period) {
+			int enterPoint, PrintWriter memoryLog,
+			PrintWriter garbageCollectorLog, int period) {
 		memory = new Memory(memoryLog);
 		memory.setVTable(vtable);
 		this.stringTable = stringTable;
