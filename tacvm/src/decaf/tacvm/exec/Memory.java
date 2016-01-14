@@ -110,6 +110,7 @@ public class Memory {
 			pages = new int[numPages];
 			for (int i = 0; i < numPages; i++) {
 				pages[i] = getFreeBlock();
+				Arrays.fill(memory, pages[i] << 10, (pages[i] + 1) << 10, 0);
 			}
 		}
 
@@ -154,8 +155,6 @@ public class Memory {
 			throw new ExecuteException("Insufficent Memory");
 		}
 		int id = freeBlocks[--numFreeBlocks];
-		// clear the block before it is used
-		Arrays.fill(memory, id << 10, (id << 10) + 1024, 0);
 		return id;
 	}
 
@@ -221,6 +220,7 @@ public class Memory {
 			}
 			startAddr[id] = addr;
 			myBlock[id] = currentBlock;
+			Arrays.fill(memory, addr, addr + size, 0);
 		}
 		System.out.println(id + " allocated");
 		return id;
