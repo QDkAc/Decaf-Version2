@@ -1,0 +1,62 @@
+class Test {
+	
+	class Node[] array;
+	
+    void test() {
+		int n;
+		n = 7;
+		
+		array = new class Node[n];
+		int i;
+		i = 0;
+		while (i < n) {
+			array[i] = new Node();
+			array[i].setId(i);
+			i = i + 1;
+		}
+		i = 0;
+		while (i < n) {
+			array[i].setNext(array[(i*2)%n]);
+			i = i + 1;
+		}
+		
+	}
+	
+	void main() {
+		class Node one;
+		one = array[1];
+		array = new class Node[1];
+		Print(one.count());
+	}
+}
+
+class Main {
+	static void main() {
+		class Test test;
+		test = new Test();
+		test.test();
+		test.main();
+	}
+}
+
+class Node {
+	class Node next;
+	int id;
+	void setNext(class Node next){
+		this.next = next;
+	}
+	void setId(int id){
+		this.id = id;
+	}
+	int count(){
+		class Node current;
+		current = this.next;
+		int count;
+		count = 1;
+		while (current.id != this.id) {
+			current = current.next;
+			count = count + 1;
+		}
+		return count;
+	}
+}
