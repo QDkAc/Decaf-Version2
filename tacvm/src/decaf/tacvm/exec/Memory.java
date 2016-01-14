@@ -45,6 +45,10 @@ public class Memory {
 	private int[] freePages = new int[NUM_PAGES];
 	private int numFreePages;
 
+	private int[] halfPages = new int[NUM_PAGES];
+	private int[] halfPageIndex = new int[NUM_PAGES];
+	private int numHalfPages;
+
 	private int[] freeIds = new int[MAX_NUM_IDENTIFIERS];
 	private boolean[] active = new boolean[MAX_NUM_IDENTIFIERS];
 	private int numFreeIds;
@@ -52,19 +56,20 @@ public class Memory {
 	private int[] startAddr = new int[MAX_NUM_IDENTIFIERS];
 	private int[] objectSize = new int[MAX_NUM_IDENTIFIERS];
 
+	private int[] next = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+	private int[] prev = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+
 	private class ActiveIdList {
 		// a double linked list for all active ids
-		private int[] next = new int[MAX_NUM_IDENTIFIERS + 2];
-		private int[] prev = new int[MAX_NUM_IDENTIFIERS + 2];
-
-		int first, last;
+		private int[] next = new int[MAX_NUM_IDENTIFIERS + 1];
+		private int[] prev = new int[MAX_NUM_IDENTIFIERS + 1];
+		int first;
 
 		public ActiveIdList() {
 			first = MAX_NUM_IDENTIFIERS;
-			last = MAX_NUM_IDENTIFIERS + 1;
 
-			next[first] = last;
-			prev[last] = first;
+			next[first] = first;
+			prev[first] = first;
 		}
 
 		void add(int x) {
@@ -82,12 +87,12 @@ public class Memory {
 
 		int[] getAll() {
 			int cnt = 0;
-			for (int i = next[first]; i != last; i = next[i]) {
+			for (int i = next[first]; i != first; i = next[i]) {
 				++cnt;
 			}
 			int[] ret = new int[cnt];
 			cnt = 0;
-			for (int i = next[first]; i != last; i = next[i]) {
+			for (int i = next[first]; i != first; i = next[i]) {
 				ret[cnt++] = i;
 			}
 			return ret;
@@ -123,10 +128,17 @@ public class Memory {
 		int page;
 		int currentAddr;
 		int numActiveObject;
+		int usedSpace;
 
 		void clear() {
 			currentAddr = 0;
 			numActiveObject = 0;
+			usedSpace = 0;
+
+			// a double linked list of block ids in this page
+			int me = page + MAX_NUM_IDENTIFIERS;
+			prev[me] = me;
+			next[me] = me;
 		}
 
 		public SmallItemsPage(int page) {
@@ -141,8 +153,32 @@ public class Memory {
 			int addr = (page << 10) + currentAddr;
 			currentAddr += num;
 			numActiveObject++;
+			usedSpace += num;
+
 			return addr;
 		}
+
+		void recycle(int num) {
+			usedSpace -= num;
+			numActiveObject--;
+		}
+
+	}
+
+	void objectListAdd(int page, int id) {
+		int first = page + MAX_NUM_IDENTIFIERS;
+		int last = prev[first];
+
+		prev[id] = last;
+		next[id] = first;
+
+		prev[next[id]] = id;
+		next[prev[id]] = id;
+	}
+
+	void objectListRemove(int id) {
+		next[prev[id]] = next[id];
+		prev[next[id]] = prev[id];
 	}
 
 	private void recyclePage(int pageId) {
@@ -151,7 +187,11 @@ public class Memory {
 
 	private int getFreePage() {
 		if (numFreePages == 0) {
-			throw new ExecuteException("Insufficent Memory");
+			if (numHalfPages >= 2) {
+				compacify();
+			} else {
+				throw new ExecuteException("Insufficent Memory");
+			}
 		}
 		int id = freePages[--numFreePages];
 		return id;
@@ -178,6 +218,77 @@ public class Memory {
 		return activeIdList.getAll();
 	}
 
+	void removeHalfPage(int page) {
+		// swap with the last one
+		assert (halfPageIndex[page] != -1);
+
+		int idx = halfPageIndex[page];
+		int last = halfPages[numHalfPages - 1];
+		halfPages[idx] = last;
+		halfPageIndex[last] = idx;
+
+		--numHalfPages;
+		halfPageIndex[page] = -1;
+	}
+
+	void addHalfPage(int page) {
+		halfPages[numHalfPages] = page;
+		halfPageIndex[page] = numHalfPages++;
+	}
+
+	int[] tmp = new int[1024];
+
+	void merge(int p1, int p2) {
+		SmallItemsPage page1 = pages[p1];
+		SmallItemsPage page2 = pages[p2];
+
+		int cnt = 0;
+		int first = p1 + MAX_NUM_IDENTIFIERS;
+		for (int i = next[first]; i != first; i = next[i]) {
+			tmp[cnt++] = i;
+		}
+		first = p2 + MAX_NUM_IDENTIFIERS;
+		for (int i = next[first]; i != first; i = next[i]) {
+			tmp[cnt++] = i;
+		}
+
+		// remove all these items
+		for (int i = 0; i < cnt; i++) {
+			objectListRemove(tmp[i]);
+		}
+
+		// adding them to page1
+		page1.clear();
+		for (int i = 0; i < cnt; i++) {
+			int id = tmp[i];
+			// copying the old space
+			int addr = page1.alloc(objectSize[id]);
+			System.arraycopy(memory, startAddr[id], memory, addr,
+					objectSize[id]);
+			startAddr[id] = addr;
+			myPage[id] = page1;
+			objectListAdd(p1, id);
+		}
+		// recycle page2
+		page2.clear();
+		recyclePage(p2);
+	}
+
+	void compacify() {
+		// if there are two half pages, merge them
+		if (numHalfPages >= 2) {
+			int p1 = halfPages[numHalfPages - 1];
+			int p2 = halfPages[numHalfPages - 2];
+
+			removeHalfPage(p1);
+			removeHalfPage(p2);
+			merge(p1, p2);
+
+			if (pages[p1].usedSpace <= THRESHOLD)
+				addHalfPage(p1);
+		}
+	}
+
 	private PrintWriter log;
 
 	public Memory(PrintWriter log) {
@@ -192,6 +303,9 @@ public class Memory {
 		for (int i = 1; i < MAX_NUM_IDENTIFIERS; i++) {
 			freeIds[numFreeIds++] = i;
 		}
+
+		numHalfPages = 0;
+		Arrays.fill(halfPageIndex, -1);
 	}
 
 	SmallItemsPage currentPage;
@@ -200,6 +314,10 @@ public class Memory {
 		if (size < 0 || size % 4 != 0) {
 			throw new ExecuteException("bad alloc size = " + size);
 		}
+
+		// while (numHalfPages >= 2)
+		// compacify();
+
 		size /= 4;
 
 		int id = getFreeId();
@@ -214,7 +332,7 @@ public class Memory {
 
 			pageTable[id] = tab;
 			startAddr[id] = -1;
-		} else {// small item
+		} else {// small block
 			log.println("\tIt is a small block");
 			if (currentPage == null) {
 				currentPage = pages[getFreePage()];
@@ -222,10 +340,16 @@ public class Memory {
 			}
 			int addr = currentPage.alloc(size);
 			if (addr == -1) {
+				// This is possible!
+				if (currentPage.usedSpace <= THRESHOLD)
+					addHalfPage(currentPage.page);
+
 				currentPage = pages[getFreePage()];
 				addr = currentPage.alloc(size);
 				log.println("\t\tUsing a new page " + currentPage.page);
 			}
+
+			objectListAdd(currentPage.page, id);
 			startAddr[id] = addr;
 			myPage[id] = currentPage;
 			Arrays.fill(memory, addr, addr + size, 0);
@@ -278,20 +402,35 @@ public class Memory {
 	public void dispose(int id) {
 		log.println("Disposing logic address " + id);
 		assert (active[id]);
+
+		// while (numHalfPages >= 2)
+		// compacify();
+
 		if (startAddr[id] != -1) {
 			log.println("\tIt is a small block");
 			// smallItem
-			SmallItemsPage block = myPage[id];
-			block.numActiveObject--;
-			assert (block.numActiveObject >= 0);
-			if (block.numActiveObject == 0) {
-				block.clear();
-				recyclePage(block.page);
-				if (currentPage == block) {
+			SmallItemsPage page = myPage[id];
+			page.recycle(objectSize[id]);
+			objectListRemove(id);
+
+			assert (page.numActiveObject >= 0);
+
+			if (page.numActiveObject == 0) {
+				page.clear();
+
+				if (halfPageIndex[page.page] != -1) {
+					removeHalfPage(page.page);
+				}
+
+				recyclePage(page.page);
+				if (currentPage == page) {
 					currentPage = null;
 				}
-				log.println("\tPage " + block.page
+				log.println("\tPage " + page.page
 						+ " becomes empty and is recycled.");
+			} else if (page != currentPage && page.usedSpace <= THRESHOLD
+					&& halfPageIndex[page.page] == -1) {
+				addHalfPage(page.page);
 			}
 		} else {
 			log.println("\tIt is a big block");
