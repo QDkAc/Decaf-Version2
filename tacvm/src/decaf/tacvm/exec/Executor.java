@@ -239,7 +239,8 @@ public final class Executor {
 			if (rvReferenceMemory != null) {
 				memoryReferenceCount.put(rvReferenceMemory, memoryReferenceCount.get(rvReferenceMemory) - 1);
 				if (memoryReferenceCount.get(rvReferenceMemory) == 0) {
-					log.println("Memory at address " + rvReferenceMemory + " will be disposed due to zero ref count");
+					log.println(
+							"Memory at address " + rvReferenceMemory + " will be disposed due to zero ref count");
 					log.println("\tCurrent inst: " + insts[pc - 1]);
 					clearBlock(rvReferenceMemory.base);
 					memory.dispose(rvReferenceMemory.base);
@@ -399,9 +400,30 @@ public final class Executor {
 			int[] blocks = memory.getAllObject();
 			for (int block : blocks)
 				if (visitedNodes.contains(new HeapAddress(block, 0)) == false) {
-					log.println("Memory at address " + block + " will be disposed due to cyclic reference detection");
+					int size = memory.getBlockSize(block);
+					for (int i = 0; i < size; i++) {
+						if (heapReferenceMemory.containsKey(new HeapAddress(block, i * 4))) {
+							HeapAddress to = heapReferenceMemory.get(new HeapAddress(block, i * 4));
+							if (visitedNodes.contains(to)) {
+								memoryReferenceCount.put(to, memoryReferenceCount.get(to) - 1);
+							}
+						}
+						if (heapReferenceStringTable.containsKey(new HeapAddress(block, i * 4))) {
+							Integer to = heapReferenceStringTable.get(new HeapAddress(block, i * 4));
+							stringTableReferenceCount.put(to, stringTableReferenceCount.get(to) - 1);
+							if (stringTableReferenceCount.get(to) == 0) {
+								log.println(
+										"String Table at address " + to + " will be disposed due to zero ref count");
+								log.println("\tContent inside this block: " + stringTable.get(to));
+								log.println("\tCurrent inst: " + insts[pc - 1]);
+							}
+						}
+						memoryReferenceCount.remove(new HeapAddress(block, i * 4));
+						heapReferenceMemory.remove(new HeapAddress(block, i * 4));
+						heapReferenceStringTable.remove(new HeapAddress(block, i * 4));
+					}
 					memory.dispose(block);
-					memoryReferenceCount.remove(new HeapAddress(block, 0));
+					System.out.println("Memory at address " + block + " will be disposed due to cyclic ref detection");
 				}
 		}
 	}
