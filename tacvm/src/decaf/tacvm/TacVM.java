@@ -111,6 +111,8 @@ public final class TacVM {
 				garbageCollectorLog, cyclicReferenceDetectionPeriod);
 		// executor.dumpInsts();
 		executor.exec();
+		memoryLog.close();
+		garbageCollectorLog.close();
 		System.exit(0);
 	}
 
