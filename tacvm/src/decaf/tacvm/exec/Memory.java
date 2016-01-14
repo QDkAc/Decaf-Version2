@@ -1,5 +1,6 @@
 package decaf.tacvm.exec;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -179,7 +180,10 @@ public class Memory {
 		return activeIdList.getAll();
 	}
 
-	public Memory() {
+	private PrintWriter log;
+
+	public Memory(PrintWriter log) {
+		this.log = log;
 		numFreeBlocks = 0;
 		for (int i = 0; i < NUM_BLOCKS; i++) {
 			recycleBlock(i);
