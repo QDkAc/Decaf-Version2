@@ -37,7 +37,7 @@ public final class TacVM {
 		// }
 		// } else {
 		// log = new PrintWriter(new OutputStream() {
-		// @Override
+		// @Override 
 		// public void write(int b) throws IOException {
 		// }
 		// });
@@ -69,9 +69,9 @@ public final class TacVM {
 				}
 			} else {
 				try {
-					input = new BufferedInputStream(new FileInputStream(args[0]));
+					input = new BufferedInputStream(new FileInputStream(args[i]));
 				} catch (FileNotFoundException e) {
-					System.err.println("File " + args[0] + " not found");
+					System.err.println("File " + args[i] + " not found");
 					System.exit(1);
 				}
 			}
