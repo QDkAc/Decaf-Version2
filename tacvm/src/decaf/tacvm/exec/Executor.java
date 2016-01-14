@@ -75,6 +75,8 @@ public final class Executor {
 
 		private void _Halt() {
 			// printStackTrace();
+			memoryLog.close();
+			garbageCollectorLog.close();
 			System.exit(0);
 		}
 
@@ -414,8 +416,10 @@ public final class Executor {
 			}
 			int[] blocks = memory.getAllObject();
 			for (int block : blocks)
-				if (visitedNodes.contains(new HeapAddress(block, 0)) == false)
+				if (visitedNodes.contains(new HeapAddress(block, 0)) == false){
+					log.println("Memory at address " + block + " will be disposed due to cyclic reference detection");
 					memory.dispose(block);
+				}
 		}
 	}
 
@@ -715,6 +719,8 @@ public final class Executor {
 									+ ": unknown tac");
 						}
 						// printStackTrace();
+						memoryLog.close();
+						garbageCollectorLog.close();
 						System.exit(0);
 					}
 				} catch (ExecuteException e) {
@@ -728,6 +734,8 @@ public final class Executor {
 								+ e.getMessage());
 					}
 					// printStackTrace();
+					memoryLog.close();
+					garbageCollectorLog.close();
 					System.exit(0);
 				} catch (Exception e) {
 					if (inst.loc != null) {
