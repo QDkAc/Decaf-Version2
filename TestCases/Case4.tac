@@ -27,138 +27,136 @@ _Node_New:
     _T6 = 8
     parm _T6
     _T7 =  call _Alloc
-    _T8 = 0
-    *(_T7 + 4) = _T8
-    _T9 = VTBL <_Node>
-    *(_T7 + 0) = _T9
+    _T8 = VTBL <_Node>
+    *(_T7 + 0) = _T8
     return _T7
 }
 
 FUNCTION(main) {
 memo ''
 main:
-    _T11 = 7
-    _T10 = _T11
-    _T13 = 0
-    _T14 = (_T10 < _T13)
-    if (_T14 == 0) branch _L13
-    _T15 = "Decaf runtime error: Cannot create negative-sized array\n"
-    parm _T15
+    _T10 = 7
+    _T9 = _T10
+    _T12 = 0
+    _T13 = (_T9 < _T12)
+    if (_T13 == 0) branch _L13
+    _T14 = "Decaf runtime error: Cannot create negative-sized array\n"
+    parm _T14
     call _PrintString
     call _Halt
 _L13:
-    _T16 = 4
-    _T17 = (_T16 * _T10)
-    _T18 = (_T16 + _T17)
-    parm _T18
-    _T19 =  call _Alloc
-    *(_T19 + 0) = _T10
-    _T12 = _T19
-    _T21 = 0
-    _T20 = _T21
+    _T15 = 4
+    _T16 = (_T15 * _T9)
+    _T17 = (_T15 + _T16)
+    parm _T17
+    _T18 =  call _Alloc
+    *(_T18 + 0) = _T9
+    _T11 = _T18
+    _T20 = 0
+    _T19 = _T20
 _L14:
-    _T22 = (_T20 < _T10)
-    if (_T22 == 0) branch _L15
-    _T23 =  call _Node_New
-    _T24 = *(_T12 + 0)
-    _T25 = (_T20 < _T24)
-    if (_T25 == 0) branch _L16
-    _T26 = 0
-    _T27 = (_T20 < _T26)
-    if (_T27 == 0) branch _L17
+    _T21 = (_T19 < _T9)
+    if (_T21 == 0) branch _L15
+    _T22 =  call _Node_New
+    _T23 = *(_T11 + 0)
+    _T24 = (_T19 < _T23)
+    if (_T24 == 0) branch _L16
+    _T25 = 0
+    _T26 = (_T19 < _T25)
+    if (_T26 == 0) branch _L17
 _L16:
-    _T28 = "Decaf runtime error: Array subscript out of bounds\n"
-    parm _T28
+    _T27 = "Decaf runtime error: Array subscript out of bounds\n"
+    parm _T27
     call _PrintString
     call _Halt
 _L17:
-    _T29 = 4
-    _T30 = (_T20 * _T29)
-    _T31 = (_T30 + _T29)
-    _T32 = *(_T12 + _T31)
-    _T33 = 4
-    _T34 = (_T20 * _T33)
-    _T35 = (_T34 + _T33)
-    *(_T12 + _T35) = _T23
-    _T36 = *(_T12 + 0)
-    _T37 = (_T20 < _T36)
-    if (_T37 == 0) branch _L18
-    _T38 = 0
-    _T39 = (_T20 < _T38)
-    if (_T39 == 0) branch _L19
+    _T28 = 4
+    _T29 = (_T19 * _T28)
+    _T30 = (_T29 + _T28)
+    _T31 = *(_T11 + _T30)
+    _T32 = 4
+    _T33 = (_T19 * _T32)
+    _T34 = (_T33 + _T32)
+    *(_T11 + _T34) = _T22
+    _T35 = *(_T11 + 0)
+    _T36 = (_T19 < _T35)
+    if (_T36 == 0) branch _L18
+    _T37 = 0
+    _T38 = (_T19 < _T37)
+    if (_T38 == 0) branch _L19
 _L18:
-    _T40 = "Decaf runtime error: Array subscript out of bounds\n"
-    parm _T40
+    _T39 = "Decaf runtime error: Array subscript out of bounds\n"
+    parm _T39
     call _PrintString
     call _Halt
 _L19:
-    _T41 = 4
-    _T42 = (_T20 * _T41)
-    _T43 = (_T42 + _T41)
-    _T44 = *(_T12 + _T43)
-    parm _T44
-    parm _T20
-    _T45 = *(_T44 + 0)
-    _T46 = *(_T45 + 8)
-    call _T46
-    _T47 = 1
-    _T48 = (_T20 + _T47)
-    _T20 = _T48
+    _T40 = 4
+    _T41 = (_T19 * _T40)
+    _T42 = (_T41 + _T40)
+    _T43 = *(_T11 + _T42)
+    parm _T43
+    parm _T19
+    _T44 = *(_T43 + 0)
+    _T45 = *(_T44 + 8)
+    call _T45
+    _T46 = 1
+    _T47 = (_T19 + _T46)
+    _T19 = _T47
     branch _L14
 _L15:
-    _T50 = 1
-    _T51 = *(_T12 + 0)
-    _T52 = (_T50 < _T51)
-    if (_T52 == 0) branch _L20
-    _T53 = 0
-    _T54 = (_T50 < _T53)
-    if (_T54 == 0) branch _L21
+    _T49 = 1
+    _T50 = *(_T11 + 0)
+    _T51 = (_T49 < _T50)
+    if (_T51 == 0) branch _L20
+    _T52 = 0
+    _T53 = (_T49 < _T52)
+    if (_T53 == 0) branch _L21
 _L20:
-    _T55 = "Decaf runtime error: Array subscript out of bounds\n"
-    parm _T55
+    _T54 = "Decaf runtime error: Array subscript out of bounds\n"
+    parm _T54
     call _PrintString
     call _Halt
 _L21:
-    _T56 = 4
-    _T57 = (_T50 * _T56)
-    _T58 = (_T57 + _T56)
-    _T59 = *(_T12 + _T58)
-    _T49 = _T59
-    _T60 = 1
-    _T61 = 0
-    _T62 = (_T60 < _T61)
-    if (_T62 == 0) branch _L22
-    _T63 = "Decaf runtime error: Cannot create negative-sized array\n"
-    parm _T63
+    _T55 = 4
+    _T56 = (_T49 * _T55)
+    _T57 = (_T56 + _T55)
+    _T58 = *(_T11 + _T57)
+    _T48 = _T58
+    _T59 = 1
+    _T60 = 0
+    _T61 = (_T59 < _T60)
+    if (_T61 == 0) branch _L22
+    _T62 = "Decaf runtime error: Cannot create negative-sized array\n"
+    parm _T62
     call _PrintString
     call _Halt
 _L22:
-    _T64 = 4
-    _T65 = (_T64 * _T60)
-    _T66 = (_T64 + _T65)
-    parm _T66
-    _T67 =  call _Alloc
-    *(_T67 + 0) = _T60
-    _T12 = _T67
-    parm _T49
-    _T68 = *(_T49 + 0)
-    _T69 = *(_T68 + 12)
-    _T70 =  call _T69
-    parm _T70
+    _T63 = 4
+    _T64 = (_T63 * _T59)
+    _T65 = (_T63 + _T64)
+    parm _T65
+    _T66 =  call _Alloc
+    *(_T66 + 0) = _T59
+    _T11 = _T66
+    parm _T48
+    _T67 = *(_T48 + 0)
+    _T68 = *(_T67 + 12)
+    _T69 =  call _T68
+    parm _T69
     call _PrintInt
 }
 
 FUNCTION(_Node.setId) {
 memo '_T0:4 _T1:8'
 _Node.setId:
-    _T71 = *(_T0 + 4)
+    _T70 = *(_T0 + 4)
     *(_T0 + 4) = _T1
 }
 
 FUNCTION(_Node.count) {
 memo '_T2:4'
 _Node.count:
-    _T72 = *(_T2 + 4)
-    return _T72
+    _T71 = *(_T2 + 4)
+    return _T71
 }
 

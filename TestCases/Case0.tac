@@ -27,36 +27,34 @@ _Item_New:
     _T6 = 8
     parm _T6
     _T7 =  call _Alloc
-    _T8 = 0
-    *(_T7 + 4) = _T8
-    _T9 = VTBL <_Item>
-    *(_T7 + 0) = _T9
+    _T8 = VTBL <_Item>
+    *(_T7 + 0) = _T8
     return _T7
 }
 
 FUNCTION(main) {
 memo ''
 main:
-    _T11 = 0
-    _T10 = _T11
+    _T10 = 0
+    _T9 = _T10
 _L13:
-    _T13 = 10
-    _T14 = (_T10 < _T13)
-    if (_T14 == 0) branch _L14
-    _T15 =  call _Item_New
-    _T12 = _T15
-    parm _T12
-    parm _T10
-    _T16 = *(_T12 + 0)
-    _T17 = *(_T16 + 8)
-    call _T17
-    parm _T12
-    _T18 = *(_T12 + 0)
-    _T19 = *(_T18 + 12)
-    call _T19
-    _T20 = 1
-    _T21 = (_T10 + _T20)
-    _T10 = _T21
+    _T12 = 10
+    _T13 = (_T9 < _T12)
+    if (_T13 == 0) branch _L14
+    _T14 =  call _Item_New
+    _T11 = _T14
+    parm _T11
+    parm _T9
+    _T15 = *(_T11 + 0)
+    _T16 = *(_T15 + 8)
+    call _T16
+    parm _T11
+    _T17 = *(_T11 + 0)
+    _T18 = *(_T17 + 12)
+    call _T18
+    _T19 = 1
+    _T20 = (_T9 + _T19)
+    _T9 = _T20
     branch _L13
 _L14:
 }
@@ -64,18 +62,18 @@ _L14:
 FUNCTION(_Item.setId) {
 memo '_T0:4 _T1:8'
 _Item.setId:
-    _T22 = *(_T0 + 4)
+    _T21 = *(_T0 + 4)
     *(_T0 + 4) = _T1
 }
 
 FUNCTION(_Item.printId) {
 memo '_T2:4'
 _Item.printId:
-    _T23 = *(_T2 + 4)
-    parm _T23
+    _T22 = *(_T2 + 4)
+    parm _T22
     call _PrintInt
-    _T24 = "\n"
-    parm _T24
+    _T23 = "\n"
+    parm _T23
     call _PrintString
 }
 
