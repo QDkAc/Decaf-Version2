@@ -68,22 +68,6 @@ _L14:
     _T20 = *(_T15 + 0)
     _T21 = *(_T20 + 8)
     call _T21
-    _T23 = 1000000
-    _T24 = 0
-    _T25 = (_T23 < _T24)
-    if (_T25 == 0) branch _L16
-    _T26 = "Decaf runtime error: Cannot create negative-sized array\n"
-    parm _T26
-    call _PrintString
-    call _Halt
-_L16:
-    _T27 = 4
-    _T28 = (_T27 * _T23)
-    _T29 = (_T27 + _T28)
-    parm _T29
-    _T30 =  call _Alloc
-    *(_T30 + 0) = _T23
-    _T22 = _T30
     branch _L14
 _L15:
 }
@@ -91,14 +75,14 @@ _L15:
 FUNCTION(_A.init) {
 memo '_T0:4 _T1:8'
 _A.init:
-    _T31 = *(_T0 + 4)
+    _T22 = *(_T0 + 4)
     *(_T0 + 4) = _T1
 }
 
 FUNCTION(_B.init) {
 memo '_T2:4 _T3:8'
 _B.init:
-    _T32 = *(_T2 + 4)
+    _T23 = *(_T2 + 4)
     *(_T2 + 4) = _T3
 }
 
