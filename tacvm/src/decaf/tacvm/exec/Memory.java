@@ -1,5 +1,7 @@
 package decaf.tacvm.exec;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +14,7 @@ public class Memory {
 	// the whole logic naming space start from 0
 	public static int PAGE_SIZE = 1024;// a page is 1024 ints
 
-	public static int NUM_PAGES = 1 << 15;// number of blocks
+	private int NUM_PAGES;// number of pages
 
 	public static int THRESHOLD = PAGE_SIZE / 2;
 
@@ -41,12 +43,12 @@ public class Memory {
 
 	// new part
 	// the start of block i is i*1024
-	private int[] memory = new int[PAGE_SIZE * NUM_PAGES];
-	private int[] freePages = new int[NUM_PAGES];
+	private int[] memory;// = new int[PAGE_SIZE * NUM_PAGES];
+	private int[] freePages;// = new int[NUM_PAGES];
 	private int numFreePages;
 
-	private int[] halfPages = new int[NUM_PAGES];
-	private int[] halfPageIndex = new int[NUM_PAGES];
+	private int[] halfPages;// = new int[NUM_PAGES];
+	private int[] halfPageIndex;// = new int[NUM_PAGES];
 	private int numHalfPages;
 
 	private int[] freeIds = new int[MAX_NUM_IDENTIFIERS];
@@ -56,8 +58,8 @@ public class Memory {
 	private int[] startAddr = new int[MAX_NUM_IDENTIFIERS];
 	private int[] objectSize = new int[MAX_NUM_IDENTIFIERS];
 
-	private int[] next = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
-	private int[] prev = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+	private int[] next;// = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+	private int[] prev;// = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
 
 	private class ActiveIdList {
 		// a double linked list for all active ids
@@ -104,7 +106,7 @@ public class Memory {
 	private PageTable[] pageTable = new PageTable[MAX_NUM_IDENTIFIERS];
 	private SmallItemsPage[] myPage = new SmallItemsPage[MAX_NUM_IDENTIFIERS];
 
-	private SmallItemsPage[] pages = new SmallItemsPage[NUM_PAGES];
+	private SmallItemsPage[] pages;// = new SmallItemsPage[NUM_PAGES];
 
 	// for big object
 	private class PageTable {
@@ -188,7 +190,7 @@ public class Memory {
 	private int getFreePage() {
 		if (numFreePages == 0) {
 			if (numHalfPages >= 2) {
-				compacify();
+				defragment();
 			} else {
 				throw new ExecuteException("Insufficent Memory");
 			}
@@ -239,8 +241,16 @@ public class Memory {
 	int[] tmp = new int[1024];
 
 	void merge(int p1, int p2) {
+		PrintWriter log = emptyLog;
+		if (logOptions['m'])
+			log = this.log;
 		SmallItemsPage page1 = pages[p1];
 		SmallItemsPage page2 = pages[p2];
+		log.println("merging page " + p1 + " and page " + p2 + ":");
+		log.println("\tpage " + p1 + ": " + page1.numActiveObject
+				+ " objects, " + page1.usedSpace + " space");
+		log.println("\tpage " + p2 + ": " + page2.numActiveObject
+				+ " objects, " + page2.usedSpace + " space");
 
 		int cnt = 0;
 		int first = p1 + MAX_NUM_IDENTIFIERS;
@@ -269,12 +279,13 @@ public class Memory {
 			myPage[id] = page1;
 			objectListAdd(p1, id);
 		}
+		log.println("\tMoved " + cnt + " objects, page " + p2 + " is recycled");
 		// recycle page2
 		page2.clear();
 		recyclePage(p2);
 	}
 
-	void compacify() {
+	void defragment() {
 		// if there are two half pages, merge them
 		if (numHalfPages >= 2) {
 			int p1 = halfPages[numHalfPages - 1];
@@ -289,10 +300,37 @@ public class Memory {
 		}
 	}
 
-	private PrintWriter log;
+	void defragmentInSparseTime(int limit) {
+		for (int i = 0; i < limit && numHalfPages >= 2; i++) {
+			defragment();
+		}
+	}
 
-	public Memory(PrintWriter log) {
+	private PrintWriter log, emptyLog;
+	private boolean[] logOptions;
+
+	public Memory(PrintWriter log, boolean[] logOptions, int NUM_PAGES) {
+		this.NUM_PAGES = NUM_PAGES;
 		this.log = log;
+		this.logOptions = logOptions.clone();
+
+		memory = new int[PAGE_SIZE * NUM_PAGES];
+		freePages = new int[NUM_PAGES];
+
+		halfPages = new int[NUM_PAGES];
+		halfPageIndex = new int[NUM_PAGES];
+
+		next = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+		prev = new int[MAX_NUM_IDENTIFIERS + NUM_PAGES];
+
+		pages = new SmallItemsPage[NUM_PAGES];
+
+		emptyLog = new PrintWriter(new OutputStream() {
+			@Override
+			public void write(int b) throws IOException {
+			}
+		});
+
 		numFreePages = 0;
 		for (int i = 0; i < NUM_PAGES; i++) {
 			recyclePage(i);
@@ -315,10 +353,10 @@ public class Memory {
 			throw new ExecuteException("bad alloc size = " + size);
 		}
 
-		// while (numHalfPages >= 2)
-		// compacify();
-
 		size /= 4;
+		PrintWriter log = emptyLog;
+		if (logOptions['a'])
+			log = this.log;
 
 		int id = getFreeId();
 		objectSize[id] = size;
@@ -332,6 +370,9 @@ public class Memory {
 
 			pageTable[id] = tab;
 			startAddr[id] = -1;
+
+			// do some defragment procedure in the meanwhile
+			defragmentInSparseTime(numPages / 5);
 		} else {// small block
 			log.println("\tIt is a small block");
 			if (currentPage == null) {
@@ -400,6 +441,10 @@ public class Memory {
 	}
 
 	public void dispose(int id) {
+		PrintWriter log = emptyLog;
+		if (logOptions['d'])
+			log = this.log;
+
 		log.println("Disposing logic address " + id);
 		assert (active[id]);
 

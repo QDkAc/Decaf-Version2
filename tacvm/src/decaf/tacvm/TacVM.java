@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import decaf.tacvm.exec.Executor;
 import decaf.tacvm.parser.Errs;
@@ -18,6 +19,8 @@ import decaf.tacvm.parser.Parser;
 public final class TacVM {
 	private InputStream input = System.in;
 	private PrintWriter memoryLog, garbageCollectorLog;
+	private int NUM_PAGES;
+	private boolean[] memoryLogOptions;
 	private int cyclicReferenceDetectionPeriod = -1;
 
 	public TacVM(String[] args) {
@@ -37,11 +40,16 @@ public final class TacVM {
 		// }
 		// } else {
 		// log = new PrintWriter(new OutputStream() {
-		// @Override 
+		// @Override
 		// public void write(int b) throws IOException {
 		// }
 		// });
 		// }
+		memoryLogOptions = new boolean[256];
+		Arrays.fill(memoryLogOptions, false);
+
+		NUM_PAGES = 1 << 10;// default value
+
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-m")) {
 				i++;
@@ -67,9 +75,21 @@ public final class TacVM {
 				if (i < args.length) {
 					cyclicReferenceDetectionPeriod = Integer.parseInt(args[i]);
 				}
+			} else if (args[i].equals("-n")) {
+				i++;
+				if (i < args.length) {
+					NUM_PAGES = Integer.parseInt(args[i]);
+				}
+			} else if (args[i].equals("-ma")) {
+				memoryLogOptions['a'] = true;
+			} else if (args[i].equals("-md")) {
+				memoryLogOptions['d'] = true;
+			} else if (args[i].equals("-mm")) {
+				memoryLogOptions['m'] = true;
 			} else {
 				try {
-					input = new BufferedInputStream(new FileInputStream(args[i]));
+					input = new BufferedInputStream(
+							new FileInputStream(args[i]));
 				} catch (FileNotFoundException e) {
 					System.err.println("File " + args[i] + " not found");
 					System.exit(1);
@@ -107,8 +127,10 @@ public final class TacVM {
 		Executor executor = new Executor();
 		System.out.println(memoryLog);
 
-		executor.init(parser.getStringTable(), parser.getTacs(), parser.getVTables(), parser.getEnterPoint(), memoryLog,
-				garbageCollectorLog, cyclicReferenceDetectionPeriod);
+		executor.init(parser.getStringTable(), parser.getTacs(),
+				parser.getVTables(), parser.getEnterPoint(), memoryLog,
+				memoryLogOptions, NUM_PAGES, garbageCollectorLog,
+				cyclicReferenceDetectionPeriod);
 		// executor.dumpInsts();
 		executor.exec();
 		memoryLog.close();
