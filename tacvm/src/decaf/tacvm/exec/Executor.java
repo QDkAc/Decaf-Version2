@@ -461,7 +461,7 @@ public final class Executor {
 								i * 4));
 					}
 					memory.dispose(block);
-					System.out.println("Memory at address " + block
+					log.println("Memory at address " + block
 							+ " will be disposed due to cyclic ref detection");
 				}
 		}
