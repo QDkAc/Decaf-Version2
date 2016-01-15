@@ -1,0 +1,7 @@
+-m filename: Memory部分的log输出到filename文件，如果没有则不输出memory部分的log。
+-g filename: gc部分的log输出到filename文件，如果没有则不输出memory部分的log。
+-p period: 设置gc中循环检测的周期，默认为1000
+-n numpages：设置Memory中一共有几个可用页面，默认为1024
+-ma：输出Memory部分关于alloc的信息
+-md：输出Memory部分关于dispose的信息
+-mm：输出Memory部分关于merge(碎片整理)的信息
